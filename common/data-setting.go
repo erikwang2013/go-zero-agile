@@ -12,7 +12,6 @@ import (
 	"github.com/sony/sonyflake"
 )
 
-
 var snoflake *sonyflake.Sonyflake
 
 func init() {
@@ -23,11 +22,13 @@ func init() {
     })
 }
 
-func NextSonyFlakeIdInt64() int64 {
+//雪花算法生成id
+func NextSonyFlakeIdInt64() uint64 {
     snoyId, _ := snoflake.NextID()
-    return int64(snoyId)
+    return snoyId
 }
 
+//格式化价格保留两位小数
 func Decimal(value float64) float64 {
     value, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
     return value
@@ -87,19 +88,18 @@ func StructToMap(obj interface{}) map[string]interface{} {
 
 func ArrToString(arr []string) string {
 
-	if len(arr) == 0 {
-		return ""
-	}
+    if len(arr) == 0 {
+        return ""
+    }
 
-	var str = ""
+    var str = ""
 
-	for _, i := range arr {
-		str += "," + i
-	}
+    for _, i := range arr {
+        str += "," + i
+    }
 
-	return str[1:]
+    return str[1:]
 }
-
 
 func RemoveRepByLoop(slc []int) []int {
     result := []int{} // 存放结果
@@ -136,31 +136,31 @@ func RemoveRepByLoopString(slc []string) []string {
 }
 
 func GetRemoteClientIp(r *http.Request) string {
-	remoteIp := r.RemoteAddr
- 
-	if ip := r.Header.Get("X-Real-IP"); ip != "" {
-		remoteIp = ip
-	} else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
-		remoteIp = ip
-	} else {
-		remoteIp, _, _ = net.SplitHostPort(remoteIp)
-	}
- 
-	//本地ip
-	if remoteIp == "::1" {
-		remoteIp = "127.0.0.1"
-	}
- 
-	return remoteIp
+    remoteIp := r.RemoteAddr
+
+    if ip := r.Header.Get("X-Real-IP"); ip != "" {
+        remoteIp = ip
+    } else if ip = r.Header.Get("X-Forwarded-For"); ip != "" {
+        remoteIp = ip
+    } else {
+        remoteIp, _, _ = net.SplitHostPort(remoteIp)
+    }
+
+    //本地ip
+    if remoteIp == "::1" {
+        remoteIp = "127.0.0.1"
+    }
+
+    return remoteIp
 }
 func Page(limit, page int, count int64) (int, int) {
     pageSetNum := limit // 每页条数
 
     pageCount := math.Ceil((float64(count)) / (float64(pageSetNum))) // 总页数
     pageNum := page                                                  // 当前页码
-    if pageNum > int(pageCount) { // 如果传入的页码超出范围
+    if pageNum > int(pageCount) {                                    // 如果传入的页码超出范围
         //pageNum = int(pageCount)
-        return 0,0
+        return 0, 0
     }
     offset := pageSetNum * (pageNum - 1)
     if offset < 0 {
