@@ -24,7 +24,19 @@ func NewGetAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetAdmin
 }
 
 func (l *GetAdminLogic) GetAdmin(in *admin.IdRequest) (*admin.AdminResponse, error) {
-	// todo: add your logic here and delete this line
-
-	return &admin.AdminResponse{}, nil
+    one,err:=l.svcCtx.AdminModel.FindOne(l.ctx, in.Id)
+    if err != nil {
+        return nil, err
+    }
+	return &admin.AdminResponse{
+        Id:one.Id,
+        Name: one.Name,
+        Gender: one.Gender,
+        Phone: one.Phone,
+        Email: one.Email,
+        Status: one.Status,
+        IsDelete: one.IsDelete,
+        CreateTime: one.CreateTime.Format("006-01-02 15:04:05"),
+        UpdateTime: one.UpdateTime.Format("006-01-02 15:04:05"),
+    }, nil
 }

@@ -1,0 +1,11 @@
+Name: admin-api
+Host: 0.0.0.0
+Port: 8888
+DataSource: root:123456@tcp(localhost:3306)/go-zero-agile?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai 
+Table: admin
+Cache:
+  - Host: localhost:6379
+    Pass: 123456root
+Auth:
+  AccessSecret: 3nYd69iRFTzfvl4AIDtcroVsP1UOaL7euyXhxj2mqESMZH8WQBCwN0K5JkbpGg3Z
+  AccessExpire: 86400

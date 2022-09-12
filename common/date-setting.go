@@ -2,6 +2,36 @@ package common
 
 import "time"
 
+var defaultTime = "2006-01-02 15:04:05"
+
+func GetTodayTime() string {
+    return time.Now().Format(defaultTime)
+}
+
+func GetStampToDate(TimeStamp int64) string {
+    return time.Unix(TimeStamp, 0).Format(defaultTime)
+}
+
+func GetStampToDates(TimeStamp int64) string {
+    return time.Unix(TimeStamp, 0).Format("2006-01-02")
+}
+
+// GetSubDate 动态改变多少天前，或后的日期
+func GetSubDate(Year, Month, Date int) string {
+    return time.Now().AddDate(Year, Month, Date).Format("2006-01-02")
+}
+
+func GetDateToTimeStamp(Date string) int64 {
+    stamp, _ := time.ParseInLocation(defaultTime, Date, time.Local)
+    return stamp.Unix()
+}
+
+//指定时间格式后，格式化时间
+func DataToData(dataType string, data string) string {
+    time, _ := time.Parse(dataType, data)
+    return GetStampToDate(time.Unix())
+}
+
 //获得当前月的初始和结束日期
 func GetMonthDay(types int) (string, string) {
     now := time.Now()
@@ -126,7 +156,6 @@ func BeforeData(days int) (startTime, endTime int64) {
     endTime = time.Date(dateNows.Year(), dateNows.Month(), dateNows.Day(), 23, 59, 59, 0, dateNows.Location()).Unix()
     return startTime, endTime
 }
-
 
 func BeforeDataStartAndEnd(days int) (startTime, endTime int64) {
     dateNow := time.Now().AddDate(0, 0, days)
