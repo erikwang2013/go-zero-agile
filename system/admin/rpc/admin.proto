@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package admin;
+  
+// protoc-gen-go 版本大于1.4.0, proto文件需要加上go_package,否则无法生成
+option go_package = "./admin";
+
+message IdRequest {
+    uint64 id = 1;
+}
+  
+message AdminResponse {
+    // 用户id
+    uint64 id = 1;
+    // 用户名称
+    string name = 2;
+    // 用户性别
+    uint32 gender = 3;
+    // 手机号
+    string phone = 4;
+    // 邮箱
+    string email = 5;
+    // 状态
+    uint32 status = 6;
+    // 软删除
+    uint32 is_delete=7;
+    // 创建时间
+    string create_time =8 ;
+    // 更新时间
+    string update_time =9 ;
+}
+  
+service Admin {
+    rpc getAdmin(IdRequest) returns(AdminResponse);
+}
