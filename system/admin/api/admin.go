@@ -13,7 +13,6 @@ import (
 )
 
 var configFile = flag.String("f", "etc/admin-api.yaml", "the config file")
-
 func main() {
 	flag.Parse()
 

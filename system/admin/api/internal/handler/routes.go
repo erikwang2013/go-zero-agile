@@ -12,7 +12,7 @@ import (
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		rest.WithMiddlewares(
-			[]rest.Middleware{serverCtx.Admin},
+			[]rest.Middleware{serverCtx.AdminMiddle},
 			[]rest.Route{
 				{
 					Method:  http.MethodPost,

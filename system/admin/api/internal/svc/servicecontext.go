@@ -15,6 +15,6 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
 		Config: c,
-        AdminMiddle:middleware.NewAdminMiddleMiddleware().Handle,
+        AdminMiddle:middleware.NewAdminMiddleware().Handle,
 	}
 }
