@@ -5,22 +5,37 @@ type (
 	}
 
 	LoginReply {
-		Id           int64  `json:"id"`
+		Id           uint   `json:"id"`
 		Name         string `json:"name"`
-		Gender       string `json:"gender"`
-		Phone        string `json:"phone"`
-		Email        string `json:"email"`
 		AccessToken  string `json:"accessToken"`
-		AccessExpire int64  `json:"accessExpire"`
-		RefreshAfter int64  `json:"refreshAfter"`
+		AccessExpire uint64 `json:"accessExpire"`
+		RefreshAfter uint64 `json:"refreshAfter"`
 	}
-)
-@server(
-	jwt:Auth
-	middleware:Admin
 )
 
 service admin-api {
 	@handler login
 	post /admin/login (LoginReq) returns (LoginReply)
+}
+
+type (
+	AdminInfoReq {
+		Id uint `json:"id"`
+	}
+	AdminInfoReply {
+		Id   uint   `json:"id"`
+		Name string `json:"name"`
+	}
+)
+
+@server(
+	jwt:Auth
+	middleware:AdminMiddle
+)
+service admin-api {
+	@handler info
+	get /admin/info (AdminInfoReq) returns (AdminInfoReply)
+	
+	@handler admin
+	get /admin (AdminInfoReq) returns (AdminInfoReply)
 }

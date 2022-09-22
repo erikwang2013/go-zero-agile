@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
-	"go-zero-agile/system/admin/rpc/internal/config"
-	"go-zero-agile/system/admin/rpc/internal/server"
-	"go-zero-agile/system/admin/rpc/internal/svc"
-	"go-zero-agile/system/admin/rpc/types/admin"
+	"erik-agile/system/admin/rpc/internal/config"
+	"erik-agile/system/admin/rpc/internal/server"
+	"erik-agile/system/admin/rpc/internal/svc"
+	"erik-agile/system/admin/rpc/types/admin"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

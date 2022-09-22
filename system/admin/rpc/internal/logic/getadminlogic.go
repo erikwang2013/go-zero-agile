@@ -3,8 +3,8 @@ package logic
 import (
 	"context"
 
-	"go-zero-agile/system/admin/rpc/internal/svc"
-	"go-zero-agile/system/admin/rpc/types/admin"
+	"erik-agile/system/admin/rpc/internal/svc"
+	"erik-agile/system/admin/rpc/types/admin"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

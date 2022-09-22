@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	"go-zero-agile/system/admin/api/internal/config"
-	"go-zero-agile/system/admin/api/internal/handler"
-	"go-zero-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/config"
+	"erik-agile/system/admin/api/internal/handler"
+	"erik-agile/system/admin/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"

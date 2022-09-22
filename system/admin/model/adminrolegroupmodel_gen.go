@@ -38,11 +38,11 @@ type (
 	}
 
 	AdminRoleGroup struct {
-		Id       int64 `db:"id"`
-		AdminId  int64 `db:"admin_id"`
-		RoleId   int64 `db:"role_id"`
-		Status   int64 `db:"status"`    // 状态 0=开启 1=关闭
-		IsDelete int64 `db:"is_delete"` // 是否删 0=否 1=是
+		Id       uint `db:"id"`
+		AdminId  uint `db:"admin_id"`
+		RoleId   uint `db:"role_id"`
+		Status   uint8 `db:"status"`    // 状态 0=开启 1=关闭
+		IsDelete uint8 `db:"is_delete"` // 是否删 0=否 1=是
 	}
 )
 

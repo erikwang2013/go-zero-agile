@@ -39,16 +39,16 @@ type (
 	}
 
 	Permission struct {
-		Id               int64          `db:"id"`
-		ParentId         int64          `db:"parent_id"` // 父级
+		Id               uint          `db:"id"`
+		ParentId         uint          `db:"parent_id"` // 父级
 		Name             string         `db:"name"`      // 权限名称
 		ApiUrl           string         `db:"api_url"`   // api地址
 		Code             string         `db:"code"`
 		PermissionButton sql.NullString `db:"permission_button"` // 权限按钮
 		PermissionData   sql.NullString `db:"permission_data"`   // 权限数据
 		Info             string         `db:"info"`
-		Status           int64          `db:"status"`    // 状态 0=开启 1=关闭
-		IsDelete         int64          `db:"is_delete"` // 是否删 0=否 1=是
+		Status           uint8          `db:"status"`    // 状态 0=开启 1=关闭
+		IsDelete         uint8          `db:"is_delete"` // 是否删 0=否 1=是
 		CreateTime       time.Time      `db:"create_time"`
 	}
 )

@@ -6,7 +6,7 @@ package adminclient
 import (
 	"context"
 
-	"go-zero-agile/system/admin/rpc/types/admin"
+	"erik-agile/system/admin/rpc/types/admin"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

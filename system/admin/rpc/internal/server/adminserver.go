@@ -6,9 +6,9 @@ package server
 import (
 	"context"
 
-	"go-zero-agile/system/admin/rpc/internal/logic"
-	"go-zero-agile/system/admin/rpc/internal/svc"
-	"go-zero-agile/system/admin/rpc/types/admin"
+	"erik-agile/system/admin/rpc/internal/logic"
+	"erik-agile/system/admin/rpc/internal/svc"
+	"erik-agile/system/admin/rpc/types/admin"
 )
 
 type AdminServer struct {

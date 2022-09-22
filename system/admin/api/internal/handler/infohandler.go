@@ -9,16 +9,16 @@ import (
 	"erik-agile/system/admin/api/internal/types"
 )
 
-func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func infoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req types.LoginReq
+		var req types.AdminInfoReq
 		if err := httpx.Parse(r, &req); err != nil {
 			httpx.Error(w, err)
 			return
 		}
 
-		l := logic.NewLoginLogic(r.Context(), svcCtx)
-		resp, err := l.Login(&req)
+		l := logic.NewInfoLogic(r.Context(), svcCtx)
+		resp, err := l.Info(&req)
 		if err != nil {
 			httpx.Error(w, err)
 		} else {

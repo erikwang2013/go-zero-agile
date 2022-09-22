@@ -39,8 +39,8 @@ type (
 	}
 
 	AdminLoginLog struct {
-		Id        int64     `db:"id"`
-		AdminId   int64     `db:"admin_id"`
+		Id        uint     `db:"id"`
+		AdminId   uint     `db:"admin_id"`
 		LoginIp   string    `db:"login_ip"`   // 登录ip
 		LoginTime time.Time `db:"login_time"` // 登录时间
 	}

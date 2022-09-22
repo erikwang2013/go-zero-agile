@@ -4,7 +4,7 @@ Etcd:
   Hosts:
   - 127.0.0.1:2379
   Key: admin.rpc
-DataSource: root:123456@tcp(localhost:3306)/go-zero-agile?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai 
+DataSource: root:123456@tcp(localhost:3306)/erik-agile?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai 
 #Table: admin
 Cache:
   - Host: localhost:6379

@@ -1,8 +1,8 @@
 package svc
 
 import (
-	"go-zero-agile/system/admin/model"
-	"go-zero-agile/system/admin/rpc/internal/config"
+	"erik-agile/system/admin/model"
+	"erik-agile/system/admin/rpc/internal/config"
 
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )

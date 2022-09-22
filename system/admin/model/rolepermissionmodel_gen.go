@@ -38,11 +38,11 @@ type (
 	}
 
 	RolePermission struct {
-		Id           int64 `db:"id"`
-		RoleId       int64 `db:"role_id"`
-		PermissionId int64 `db:"permission_id"`
-		Status       int64 `db:"status"`    // 状态 0=开启 1=关闭
-		IsDelete     int64 `db:"is_delete"` // 是否删 0=否 1=是
+		Id           uint `db:"id"`
+		RoleId       uint `db:"role_id"`
+		PermissionId uint `db:"permission_id"`
+		Status       uint8 `db:"status"`    // 状态 0=开启 1=关闭
+		IsDelete     uint8 `db:"is_delete"` // 是否删 0=否 1=是
 	}
 )
 
