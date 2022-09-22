@@ -3,10 +3,13 @@ package handler
 import (
 	"net/http"
 
-	"github.com/zeromicro/go-zero/rest/httpx"
+	"erik-agile/common/errorx"
+	"erik-agile/common/successx"
 	"erik-agile/system/admin/api/internal/logic"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
+
+	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
@@ -20,9 +23,9 @@ func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := logic.NewLoginLogic(r.Context(), svcCtx)
 		resp, err := l.Login(&req)
 		if err != nil {
-			httpx.Error(w, err)
+			httpx.Error(w,errorx.NewDefaultError(err.Error()))
 		} else {
-			httpx.OkJson(w, resp)
+			httpx.OkJson(w, successx.NewDefaultSuccess(resp))
 		}
 	}
 }

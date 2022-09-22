@@ -9,9 +9,9 @@ type LoginReq struct {
 type LoginReply struct {
 	Id           uint   `json:"id"`
 	Name         string `json:"name"`
-	AccessToken  string `json:"accessToken"`
-	AccessExpire uint64  `json:"accessExpire"`
-	RefreshAfter uint64  `json:"refreshAfter"`
+	AccessToken  string `json:"access_token"`
+	AccessExpire uint64  `json:"access_expire"`
+	RefreshAfter uint64  `json:"refresh_after"`
 }
 
 type AdminInfoReq struct {

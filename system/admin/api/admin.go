@@ -32,7 +32,7 @@ func main() {
     httpx.SetErrorHandler(func(err error) (int, interface{}) {
         switch e := err.(type) {
         case *errorx.CodeError:
-            return http.StatusOK, e.Data()
+            return http.StatusOK, e.Datas()
         default:
             return http.StatusInternalServerError, nil
         }

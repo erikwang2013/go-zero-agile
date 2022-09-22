@@ -2,14 +2,14 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
-	"erik-agile/common/errorx"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 
-	validator "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -28,36 +28,32 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
     }
 }
 
-type loginData struct {
-    UserName string `json:"username" validate:"gte>=4,lte<=20"`
-    PassWord string `json:"password" validate:"gte>=10,lte<=200"`
+type LoginData struct {
+    UserName string `json:"username" validate:"alphanum"`
+    PassWord string `json:"password" validate:"alphanum"`
 }
 
-func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginReply, err error) {
-    val := validator.New()
-    loginVal := &loginData{
+func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err error) {
+    validate := validator.New()
+    loginVal :=&LoginData{
         UserName: req.UserName,
         PassWord: req.PassWord,
     }
-    err = val.Struct(loginVal)
+    err = validate.Struct(loginVal)
     if err != nil {
         varError := err.(validator.ValidationErrors)
-        // zh := zh.New()
-        // uni := ut.New(zh)
-        // trans, _ := uni.GetTranslator("zh")
-        //varError.Translate(trans)
-        return nil, errorx.NewDefaultError(varError.Error())
+        return nil, errors.New(varError.Error())
     }
     adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
     if err != nil {
-        return nil, errorx.NewDefaultError("登录校验异常")
+        return nil, errors.New("登录校验异常")
     }
     if strings.Compare(adminInfo.Password, req.PassWord) != 0 {
-        return nil, errorx.NewDefaultError("用户名或密码错误")
+        return nil, errors.New("用户名或密码错误")
     }
-    token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
+    token, now, accessExpire, err := l.getJwtToken(1)
     if err != nil {
-        return nil, errorx.NewDefaultError("令牌生成失败")
+        return nil, errors.New("令牌生成失败")
     }
     return &types.LoginReply{
         Id:           adminInfo.Id,
@@ -71,15 +67,16 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginReply, err err
 func (l *LoginLogic) getJwtToken(adminId uint) (string, uint64, uint64, error) {
     iat := uint64(time.Now().Unix())
     secretKey := l.svcCtx.Config.Auth.AccessSecret
-    seconds := uint64(l.svcCtx.Config.Auth.AccessExpire)
+    seconds := l.svcCtx.Config.Auth.AccessExpire
     claims := make(jwt.MapClaims)
     claims["exp"] = iat + seconds
     claims["iat"] = iat
     claims["admin_id"] = adminId
-    token := jwt.New(jwt.SigningMethodES256)
+    token := jwt.New(jwt.SigningMethodHS256)
     token.Claims = claims
     accessToken, err := token.SignedString([]byte(secretKey))
     if err != nil {
+        logx.Error(err)
         return "", iat, seconds, err
     }
     return accessToken, iat, seconds, nil
