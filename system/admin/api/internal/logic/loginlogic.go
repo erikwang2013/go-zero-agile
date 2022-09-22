@@ -2,10 +2,10 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"time"
 
+	"erik-agile/common/errorx"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 
@@ -29,31 +29,35 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 type loginData struct {
-    Username string `json:"username" validate:"gte>=4,lte<=20"`
-    Password string `json:"password" validate:"gte>10,lte<=200"`
+    UserName string `json:"username" validate:"gte>=4,lte<=20"`
+    PassWord string `json:"password" validate:"gte>=10,lte<=200"`
 }
 
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginReply, err error) {
     val := validator.New()
-    loginData := &loginData{
-        Username: req.Username,
-        Password: req.Password,
+    loginVal := &loginData{
+        UserName: req.UserName,
+        PassWord: req.PassWord,
     }
-    err = val.Struct(loginData)
+    err = val.Struct(loginVal)
     if err != nil {
         varError := err.(validator.ValidationErrors)
-        return nil, varError
+        // zh := zh.New()
+        // uni := ut.New(zh)
+        // trans, _ := uni.GetTranslator("zh")
+        //varError.Translate(trans)
+        return nil, errorx.NewDefaultError(varError.Error())
     }
-    adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.Username)
+    adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
     if err != nil {
-        return nil, err
+        return nil, errorx.NewDefaultError("登录校验异常")
     }
-    if strings.Compare(adminInfo.Password, req.Password) != 0 {
-        return nil, errors.New("用户名或密码错误")
+    if strings.Compare(adminInfo.Password, req.PassWord) != 0 {
+        return nil, errorx.NewDefaultError("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
     if err != nil {
-        return nil, err
+        return nil, errorx.NewDefaultError("令牌生成失败")
     }
     return &types.LoginReply{
         Id:           adminInfo.Id,

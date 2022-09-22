@@ -1,19 +1,23 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type AdminMiddleware struct {
 }
 
 func NewAdminMiddleware() *AdminMiddleware {
-	return &AdminMiddleware{}
+    return &AdminMiddleware{}
 }
 
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO generate middleware implement function, delete after code implementation
+    return func(w http.ResponseWriter, r *http.Request) {
+        // TODO generate middleware implement function, delete after code implementation
 
-		// Passthrough to next handler if need
-		next(w, r)
-	}
+        // Passthrough to next handler if need
+
+
+        next(w, r)
+    }
 }
