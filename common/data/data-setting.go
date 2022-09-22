@@ -168,3 +168,11 @@ func Page(limit, page int, count int64) (int, int) {
     }
     return pageSetNum, offset
 }
+
+func RemoveTopStruct(fields map[string]string) string {
+    rsp := ""
+    for _, err := range fields {
+        rsp += err
+    }
+    return rsp
+}

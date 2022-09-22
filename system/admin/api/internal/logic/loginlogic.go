@@ -3,13 +3,18 @@ package logic
 import (
 	"context"
 	"errors"
+	"reflect"
 	"strings"
 	"time"
 
+	"erik-agile/common/data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 
+	"github.com/go-playground/locales/zh"
+	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	zh_translations "github.com/go-playground/validator/v10/translations/zh"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -33,16 +38,36 @@ type LoginData struct {
     PassWord string `json:"password" validate:"alphanum"`
 }
 
+var trans ut.Translator
+
+func (l *LoginLogic)validateRegister(v *validator.Validate) {
+    v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+        name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+        if name == "-" {
+            return "j"
+        }
+        return name
+    })
+    zh := zh.New()
+    uni := ut.New(zh)
+    trans, _ = uni.GetTranslator("zh")
+    zh_translations.RegisterDefaultTranslations(v, trans)
+    return
+}
+
 func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err error) {
     validate := validator.New()
-    loginVal :=&LoginData{
+    l.validateRegister(validate)
+    loginVal := &LoginData{
         UserName: req.UserName,
         PassWord: req.PassWord,
     }
+
     err = validate.Struct(loginVal)
     if err != nil {
         varError := err.(validator.ValidationErrors)
-        return nil, errors.New(varError.Error())
+        transStr := varError.Translate(trans)
+        return nil, errors.New(data.RemoveTopStruct(transStr))
     }
     adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
     if err != nil {

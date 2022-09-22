@@ -17,12 +17,12 @@ import (
 
 var configFile = flag.String("f", "etc/admin-api.yaml", "the config file")
 
+
 func main() {
     flag.Parse()
 
     var c config.Config
     conf.MustLoad(*configFile, &c)
-
     server := rest.MustNewServer(c.RestConf)
     defer server.Stop()
 
