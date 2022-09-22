@@ -150,7 +150,7 @@ func GetBetweenDates(sdate, edate string) []string {
 
 //获取前一天
 func BeforeData(days int) (startTime, endTime int64) {
-    dateNow := time.Now().AddDate(0, 0, days)
+    dateNow := time.Now().AddDate(0, 0, -days)
     startTime = time.Date(dateNow.Year(), dateNow.Month(), dateNow.Day(), 0, 0, 0, 0, dateNow.Location()).Unix()
     dateNows := time.Now()
     endTime = time.Date(dateNows.Year(), dateNows.Month(), dateNows.Day(), 23, 59, 59, 0, dateNows.Location()).Unix()
