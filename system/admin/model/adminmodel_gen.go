@@ -24,7 +24,7 @@ var (
 
     cacheAdminIdPrefix   = "cache:admin:id:"
     cacheAdminNamePrefix = "cache:admin:name:"
-    AdminGenderName      = map[int]string{
+    AdminGenderName      = map[int8]string{
         0: "女",
         1: "男",
         2: "保密",

@@ -1,5 +1,5 @@
 CREATE TABLE `role` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `parent_id` int NOT NULL DEFAULT '0' COMMENT '父级id   默认0为顶级',
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   `info` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT '',

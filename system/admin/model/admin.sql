@@ -1,5 +1,5 @@
 CREATE TABLE `admin` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `parent_id` int NOT NULL DEFAULT '0' COMMENT '父级id',
   `head_img` varchar(200) COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '用户头像',
   `name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
@@ -15,4 +15,4 @@ CREATE TABLE `admin` (
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='管理员表';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='管理员表';

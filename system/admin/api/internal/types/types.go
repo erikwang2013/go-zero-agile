@@ -2,57 +2,58 @@
 package types
 
 type LoginReq struct {
-	UserName string `json:"user_name"`
-	Password string `json:"password"`
+    UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
+    Password string `json:"password" validate:"alphanum,max=30,min=6"`
 }
 
 type LoginReply struct {
-	Id           int    `json:"id"`
-	Name         string `json:"name"`
-	AccessToken  string `json:"access_token"`
-	AccessExpire int64  `json:"access_expire"`
-	RefreshAfter int64  `json:"refresh_after"`
+    Id           int    `json:"id"`
+    Name         string `json:"name"`
+    AccessToken  string `json:"access_token"`
+    AccessExpire int64  `json:"access_expire"`
+    RefreshAfter int64  `json:"refresh_after"`
 }
 
 type AdminInfoReq struct {
-	Id       int    `json:"id"`
-	ParentId int    `json:"parent_id"`
-	NickName string `json:"nick_name"`
-	Name     string `json:"name"`
-	Phone    string `json:"phone"` // 手机
-	Email    string `json:"email"` // 邮箱
+    Id       int    `json:"id" validate:"number,max=18,min=1"`
+    ParentId int    `json:"parent_id" validate:"number,max=18,min=1"`
+    NickName string `json:"nick_name" validate:"required,max=30,min=4"`
+    Name     string `json:"name" validate:"alphanum,max=30,min=4"`
+    Phone    string `json:"phone" validate:"e164"`  // 手机
+    Email    string `json:"email" validate:"email"` // 邮箱
 }
 
 type AdminInfoReply struct {
-	Id            int             `json:"id"`
-	ParentId      int             `json:"parent_id"` // 父级id
-	HeadImg       string          `json:"head_img"`  // 用户头像
-	Name          string          `json:"name"`
-	NickName      string          `json:"nick_name"`      // 昵称
-	Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
-	Phone         string          `json:"phone"`          // 手机
-	Email         string          `json:"email"`          // 邮箱
-	Status        StatusValueName `json:"status"`         // 状态 0=开启 1=关闭
-	IsDelete      StatusValueName `json:"is_delete"`      // 是否删 0=否 1=是
-	PromotionCode string          `json:"promotion_code"` // 推广码
-	Info          string          `json:"info"`           // 备注
-	CreateTime    int64           `json:"create_time"`
-	UpdateTime    int64           `json:"update_time"`
+    Id            int             `json:"id"`
+    ParentId      int             `json:"parent_id"` // 父级id
+    HeadImg       string          `json:"head_img"`  // 用户头像
+    Name          string          `json:"name"`
+    NickName      string          `json:"nick_name"` // 昵称
+    Password      string          `json:"password"`
+    Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
+    Phone         string          `json:"phone"`          // 手机
+    Email         string          `json:"email"`          // 邮箱
+    Status        StatusValueName `json:"status"`         // 状态 0=开启 1=关闭
+    IsDelete      StatusValueName `json:"is_delete"`      // 是否删 0=否 1=是
+    PromotionCode string          `json:"promotion_code"` // 推广码
+    Info          string          `json:"info"`           // 备注
+    CreateTime    int64           `json:"create_time"`
+    UpdateTime    int64           `json:"update_time"`
 }
 
 type StatusValueName struct {
-	Id   int8   `json:"id"`
-	Name string `json:"name"`
+    Id   int8   `json:"id"`
+    Name string `json:"name"`
 }
 
 type AdminAddReq struct {
-	ParentId int    `json:"parent_id"` // 父级id
-	HeadImg  string `json:"head_img"`  // 用户头像
-	Name     string `json:"name"`
-	NickName string `json:"nick_name"` // 昵称
-	Gender   int8   `json:"gender"`    // 性别 0=女 1=男 2=保密
-	Phone    string `json:"phone"`     // 手机
-	Email    string `json:"email"`     // 邮箱
-	Status   int8   `json:"status"`    // 状态 0=开启 1=关闭
-	Info     string `json:"info"`      // 备注
+    ParentId int    `json:"parent_id" validate:"number,max=18,min=0"` // 父级id
+    HeadImg  string `json:"head_img" validate:"url,max=250,min=10"`   // 用户头像
+    Name     string `json:"name" validate:"alphanum,max=30,min=4"`
+    NickName string `json:"nick_name" validate:"required,max=30,min=4"` // 昵称
+    Gender   int8   `json:"gender" validate:"number,min=0,max=2"`       // 性别 0=女 1=男 2=保密
+    Phone    string `json:"phone" validate:"len=11"`                    // 手机
+    Email    string `json:"email" validate:"email"`                     // 邮箱
+    Status   int8   `json:"status" validate:"number,min=0,max=1"`       // 状态 0=开启 1=关闭
+    Info     string `json:"info" validate:"required,max=100"`           // 备注
 }

@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"math"
+	"math/rand"
 	"net"
 	"net/http"
 	"reflect"
@@ -10,6 +11,7 @@ import (
 	"time"
 
 	"github.com/sony/sonyflake"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var snoflake *sonyflake.Sonyflake
@@ -177,13 +179,44 @@ func RemoveTopStruct(fields map[string]string) string {
     return rsp
 }
 
+func RandStr(len int) string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	bytes := make([]byte, len)
+	for i := 0; i < len; i++ {
+		b := r.Intn(26) + 65
+		bytes[i] = byte(b)
+	}
+	return string(bytes)
+
+}
+
+
 var (
-    StatusName = map[int]string{
+    StatusName = map[int8]string{
         0: "开启",
         1: "关闭",
     }
-    IsDeleteName = map[int]string{
+    IsDeleteName = map[int8]string{
         0: "未删除",
         1: "已删除",
     }
 )
+
+// 加密密码
+func HashAndSalt(pwd []byte) string {
+    hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+    if err != nil {
+
+    }
+    return string(hash)
+}
+
+// 验证密码
+func ValidatePasswords(hashedPwd string, plainPwd []byte) bool {
+    byteHash := []byte(hashedPwd)
+    err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+    if err != nil {
+        return false
+    }
+    return true
+}

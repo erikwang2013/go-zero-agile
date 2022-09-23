@@ -1,7 +1,7 @@
 type (
 	LoginReq {
-		UserName string `json:"user_name"`
-		Password string `json:"password"`
+		UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
+		Password string `json:"password" validate:"alphanum,max=30,min=6"`
 	}
 
 	LoginReply {
@@ -20,19 +20,20 @@ service admin-api {
 
 type (
 	AdminInfoReq {
-		Id       int    `json:"id"`
-		ParentId int    `json:"parent_id"`
-		NickName string `json:"nick_name"`
-		Name     string `json:"name"`
-		Phone    string `json:"phone"` // 手机
-		Email    string `json:"email"` // 邮箱
+		Id       int    `json:"id" validate:"number,max=18,min=1"`
+		ParentId int    `json:"parent_id" validate:"number,max=18,min=1"`
+		NickName string `json:"nick_name" validate:"alphanum,max=30,min=4"`
+		Name     string `json:"name" validate:"alphanum,max=30,min=4"`
+		Phone    string `json:"phone" validate:"e164"`  // 手机
+		Email    string `json:"email" validate:"email"` // 邮箱
 	}
 	AdminInfoReply {
 		Id            int             `json:"id"`
 		ParentId      int             `json:"parent_id"` // 父级id
 		HeadImg       string          `json:"head_img"`  // 用户头像
 		Name          string          `json:"name"`
-		NickName      string          `json:"nick_name"`      // 昵称
+		NickName      string          `json:"nick_name"` // 昵称
+		Password      string          `json:"password"`
 		Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
 		Phone         string          `json:"phone"`          // 手机
 		Email         string          `json:"email"`          // 邮箱
@@ -50,15 +51,15 @@ type (
 	}
 
 	AdminAddReq {
-		ParentId int    `json:"parent_id"` // 父级id
-		HeadImg  string `json:"head_img"`  // 用户头像
-		Name     string `json:"name"`
-		NickName string `json:"nick_name"` // 昵称
-		Gender   int8   `json:"gender"`    // 性别 0=女 1=男 2=保密
-		Phone    string `json:"phone"`     // 手机
-		Email    string `json:"email"`     // 邮箱
-		Status   int8   `json:"status"`    // 状态 0=开启 1=关闭
-		Info     string `json:"info"`      // 备注
+		ParentId int    `json:"parent_id" validate:"number,max=18,min=1"` // 父级id
+		HeadImg  string `json:"head_img" validate:"url,max=250,min=10"`   // 用户头像
+		Name     string `json:"name" validate:"alphanum,max=30,min=4"`
+		NickName string `json:"nick_name" validate:"alphanum,max=30,min=4"` // 昵称
+		Gender   int8   `json:"gender" validate:"number,len=1"`             // 性别 0=女 1=男 2=保密
+		Phone    string `json:"phone" validate:"e164"`                      // 手机
+		Email    string `json:"email" validate:"email"`                     // 邮箱
+		Status   int8   `json:"status" validate:"number,len=1"`             // 状态 0=开启 1=关闭
+		Info     string `json:"info" validate:"alphanum,max=100"`           // 备注
 	}
 )
 

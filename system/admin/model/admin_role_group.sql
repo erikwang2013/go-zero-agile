@@ -1,5 +1,5 @@
 CREATE TABLE `admin_role_group` (
-  `id` int NOT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
   `admin_id` int NOT NULL,
   `role_id` int NOT NULL,
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态 0=开启 1=关闭',

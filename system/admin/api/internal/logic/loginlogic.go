@@ -34,14 +34,9 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
     }
 }
 
-type LoginData struct {
-    UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
-    PassWord string `json:"password" validate:"alphanum,max=30,min=6"`
-}
-
 var trans ut.Translator
 
-func (l *LoginLogic) validateRegister(v *validator.Validate) {
+func validateRegister(v *validator.Validate) {
     v.RegisterTagNameFunc(func(fld reflect.StructField) string {
         name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
         if name == "-" {
@@ -58,13 +53,8 @@ func (l *LoginLogic) validateRegister(v *validator.Validate) {
 
 func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err error) {
     validate := validator.New()
-    l.validateRegister(validate)
-    loginVal := &LoginData{
-        UserName: req.UserName,
-        PassWord: req.Password,
-    }
-
-    err = validate.Struct(loginVal)
+    validateRegister(validate)
+    err = validate.Struct(req)
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
