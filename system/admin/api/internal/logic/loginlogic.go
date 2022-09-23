@@ -34,7 +34,7 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 type LoginData struct {
-    UserName string `json:"username" validate:"alphanum"`
+    UserName string `json:"user_name" validate:"alphanum"`
     PassWord string `json:"password" validate:"alphanum"`
 }
 
