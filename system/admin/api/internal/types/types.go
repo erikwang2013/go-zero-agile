@@ -7,18 +7,18 @@ type LoginReq struct {
 }
 
 type LoginReply struct {
-	Id           uint   `json:"id"`
+	Id           int   `json:"id"`
 	Name         string `json:"name"`
 	AccessToken  string `json:"access_token"`
-	AccessExpire uint64  `json:"access_expire"`
-	RefreshAfter uint64  `json:"refresh_after"`
+	AccessExpire int64  `json:"access_expire"`
+	RefreshAfter int64  `json:"refresh_after"`
 }
 
 type AdminInfoReq struct {
-	Id uint `json:"id"`
+	Id int `json:"id"`
 }
 
 type AdminInfoReply struct {
-	Id   uint   `json:"id"`
+	Id   int   `json:"id"`
 	Name string `json:"name"`
 }

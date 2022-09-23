@@ -28,9 +28,9 @@ var (
 type (
 	permissionModel interface {
 		Insert(ctx context.Context, data *Permission) (sql.Result, error)
-		FindOne(ctx context.Context, id int64) (*Permission, error)
+		FindOne(ctx context.Context, id int) (*Permission, error)
 		Update(ctx context.Context, data *Permission) error
-		Delete(ctx context.Context, id int64) error
+		Delete(ctx context.Context, id int) error
 	}
 
 	defaultPermissionModel struct {
@@ -39,16 +39,16 @@ type (
 	}
 
 	Permission struct {
-		Id               uint          `db:"id"`
-		ParentId         uint          `db:"parent_id"` // 父级
+		Id               int          `db:"id"`
+		ParentId         int          `db:"parent_id"` // 父级
 		Name             string         `db:"name"`      // 权限名称
 		ApiUrl           string         `db:"api_url"`   // api地址
 		Code             string         `db:"code"`
 		PermissionButton sql.NullString `db:"permission_button"` // 权限按钮
 		PermissionData   sql.NullString `db:"permission_data"`   // 权限数据
 		Info             string         `db:"info"`
-		Status           uint8          `db:"status"`    // 状态 0=开启 1=关闭
-		IsDelete         uint8          `db:"is_delete"` // 是否删 0=否 1=是
+		Status           int8          `db:"status"`    // 状态 0=开启 1=关闭
+		IsDelete         int8          `db:"is_delete"` // 是否删 0=否 1=是
 		CreateTime       time.Time      `db:"create_time"`
 	}
 )
@@ -60,7 +60,7 @@ func newPermissionModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultPermission
 	}
 }
 
-func (m *defaultPermissionModel) Delete(ctx context.Context, id int64) error {
+func (m *defaultPermissionModel) Delete(ctx context.Context, id int) error {
 	permissionIdKey := fmt.Sprintf("%s%v", cachePermissionIdPrefix, id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
@@ -69,7 +69,7 @@ func (m *defaultPermissionModel) Delete(ctx context.Context, id int64) error {
 	return err
 }
 
-func (m *defaultPermissionModel) FindOne(ctx context.Context, id int64) (*Permission, error) {
+func (m *defaultPermissionModel) FindOne(ctx context.Context, id int) (*Permission, error) {
 	permissionIdKey := fmt.Sprintf("%s%v", cachePermissionIdPrefix, id)
 	var resp Permission
 	err := m.QueryRowCtx(ctx, &resp, permissionIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {

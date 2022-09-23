@@ -34,10 +34,10 @@ var (
 type (
     adminModel interface {
         Insert(ctx context.Context, data *Admin) (sql.Result, error)
-        FindOne(ctx context.Context, id int64) (*Admin, error)
+        FindOne(ctx context.Context, id int) (*Admin, error)
         FindOneName(ctx context.Context, name string) (*Admin, error)
         Update(ctx context.Context, data *Admin) error
-        Delete(ctx context.Context, id int64) error
+        Delete(ctx context.Context, id int) error
     }
 
     defaultAdminModel struct {
@@ -46,17 +46,17 @@ type (
     }
 
     Admin struct {
-        Id            uint      `db:"id"`
-        ParentId      uint      `db:"parent_id"` // 父级id
+        Id            int       `db:"id"`
+        ParentId      int       `db:"parent_id"` // 父级id
         HeadImg       string    `db:"head_img"`  // 用户头像
         Name          string    `db:"name"`
         NickName      string    `db:"nick_name"` // 昵称
-        Gender        uint8     `db:"gender"`    // 性别 0=女 1=男 2=保密
+        Gender        int8      `db:"gender"`    // 性别 0=女 1=男 2=保密
         Password      string    `db:"password"`
         Phone         string    `db:"phone"`          // 手机
         Email         string    `db:"email"`          // 邮箱
-        Status        uint8     `db:"status"`         // 状态 0=开启 1=关闭
-        IsDelete      uint8     `db:"is_delete"`      // 是否删 0=否 1=是
+        Status        int8      `db:"status"`         // 状态 0=开启 1=关闭
+        IsDelete      int8      `db:"is_delete"`      // 是否删 0=否 1=是
         PromotionCode string    `db:"promotion_code"` // 推广码
         Info          string    `db:"info"`           // 备注
         CreateTime    time.Time `db:"create_time"`
@@ -71,7 +71,7 @@ func newAdminModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultAdminModel {
     }
 }
 
-func (m *defaultAdminModel) Delete(ctx context.Context, id int64) error {
+func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
     adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id)
     _, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
         query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=0 ", m.table)
@@ -114,7 +114,7 @@ func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admi
 
 }
 
-func (m *defaultAdminModel) FindOne(ctx context.Context, id int64) (*Admin, error) {
+func (m *defaultAdminModel) FindOne(ctx context.Context, id int) (*Admin, error) {
     adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id)
     var resp Admin
     err := m.QueryRowCtx(ctx, &resp, adminIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {

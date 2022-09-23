@@ -10,6 +10,7 @@ import (
 	"erik-agile/common/data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
+	"erik-agile/system/admin/model"
 
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -40,7 +41,7 @@ type LoginData struct {
 
 var trans ut.Translator
 
-func (l *LoginLogic)validateRegister(v *validator.Validate) {
+func (l *LoginLogic) validateRegister(v *validator.Validate) {
     v.RegisterTagNameFunc(func(fld reflect.StructField) string {
         name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
         if name == "-" {
@@ -78,10 +79,18 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if strings.Compare(adminInfo.Password, req.PassWord) != 0 {
         return nil, errors.New("用户名或密码错误")
     }
-    token, now, accessExpire, err := l.getJwtToken(1)
+    token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
     if err != nil {
         return nil, errors.New("令牌生成失败")
     }
+    getTime := time.Unix(time.Now().Unix(), 0)
+    adminLog := &model.AdminLoginLog{
+        Id:          data.NextSonyFlakeIdInt64(),
+        AdminId:     adminInfo.Id,
+        AccessToken: token,
+        LoginTime:   getTime,
+    }
+    go l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
     return &types.LoginReply{
         Id:           adminInfo.Id,
         Name:         adminInfo.Name,
@@ -91,8 +100,8 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     }, nil
 }
 
-func (l *LoginLogic) getJwtToken(adminId uint) (string, uint64, uint64, error) {
-    iat := uint64(time.Now().Unix())
+func (l *LoginLogic) getJwtToken(adminId int) (string, int64, int64, error) {
+    iat := time.Now().Unix()
     secretKey := l.svcCtx.Config.Auth.AccessSecret
     seconds := l.svcCtx.Config.Auth.AccessExpire
     claims := make(jwt.MapClaims)

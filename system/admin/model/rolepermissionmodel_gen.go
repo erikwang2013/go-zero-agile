@@ -27,9 +27,9 @@ var (
 type (
 	rolePermissionModel interface {
 		Insert(ctx context.Context, data *RolePermission) (sql.Result, error)
-		FindOne(ctx context.Context, id int64) (*RolePermission, error)
+		FindOne(ctx context.Context, id int) (*RolePermission, error)
 		Update(ctx context.Context, data *RolePermission) error
-		Delete(ctx context.Context, id int64) error
+		Delete(ctx context.Context, id int) error
 	}
 
 	defaultRolePermissionModel struct {
@@ -38,11 +38,11 @@ type (
 	}
 
 	RolePermission struct {
-		Id           uint `db:"id"`
-		RoleId       uint `db:"role_id"`
-		PermissionId uint `db:"permission_id"`
-		Status       uint8 `db:"status"`    // 状态 0=开启 1=关闭
-		IsDelete     uint8 `db:"is_delete"` // 是否删 0=否 1=是
+		Id           int `db:"id"`
+		RoleId       int `db:"role_id"`
+		PermissionId int `db:"permission_id"`
+		Status       int8 `db:"status"`    // 状态 0=开启 1=关闭
+		IsDelete     int8 `db:"is_delete"` // 是否删 0=否 1=是
 	}
 )
 
@@ -53,7 +53,7 @@ func newRolePermissionModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultRolePe
 	}
 }
 
-func (m *defaultRolePermissionModel) Delete(ctx context.Context, id int64) error {
+func (m *defaultRolePermissionModel) Delete(ctx context.Context, id int) error {
 	rolePermissionIdKey := fmt.Sprintf("%s%v", cacheRolePermissionIdPrefix, id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
@@ -62,7 +62,7 @@ func (m *defaultRolePermissionModel) Delete(ctx context.Context, id int64) error
 	return err
 }
 
-func (m *defaultRolePermissionModel) FindOne(ctx context.Context, id int64) (*RolePermission, error) {
+func (m *defaultRolePermissionModel) FindOne(ctx context.Context, id int) (*RolePermission, error) {
 	rolePermissionIdKey := fmt.Sprintf("%s%v", cacheRolePermissionIdPrefix, id)
 	var resp RolePermission
 	err := m.QueryRowCtx(ctx, &resp, rolePermissionIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {

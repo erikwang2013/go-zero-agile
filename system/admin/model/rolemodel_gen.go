@@ -28,9 +28,9 @@ var (
 type (
     roleModel interface {
         Insert(ctx context.Context, data *Role) (sql.Result, error)
-        FindOne(ctx context.Context, id int64) (*Role, error)
+        FindOne(ctx context.Context, id int) (*Role, error)
         Update(ctx context.Context, data *Role) error
-        Delete(ctx context.Context, id int64) error
+        Delete(ctx context.Context, id int) error
     }
 
     defaultRoleModel struct {
@@ -39,13 +39,13 @@ type (
     }
 
     Role struct {
-        Id         uint       `db:"id"`
-        ParentId   uint       `db:"parent_id"` // 父级id   默认0为顶级
+        Id         int       `db:"id"`
+        ParentId   int       `db:"parent_id"` // 父级id   默认0为顶级
         Name       string    `db:"name"`
         Info       string    `db:"info"`
         Code       string    `db:"code"`
-        Status     uint8       `db:"status"`    // 状态 0=开启 1=关闭
-        IsDelete   uint8       `db:"is_delete"` // 是否删 0=否 1=是
+        Status     int8       `db:"status"`    // 状态 0=开启 1=关闭
+        IsDelete   int8       `db:"is_delete"` // 是否删 0=否 1=是
         CreateTime time.Time `db:"create_time"`
     }
 )
@@ -57,7 +57,7 @@ func newRoleModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultRoleModel {
     }
 }
 
-func (m *defaultRoleModel) Delete(ctx context.Context, id int64) error {
+func (m *defaultRoleModel) Delete(ctx context.Context, id int) error {
     roleIdKey := fmt.Sprintf("%s%v", cacheRoleIdPrefix, id)
     _, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
         query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
@@ -66,7 +66,7 @@ func (m *defaultRoleModel) Delete(ctx context.Context, id int64) error {
     return err
 }
 
-func (m *defaultRoleModel) FindOne(ctx context.Context, id int64) (*Role, error) {
+func (m *defaultRoleModel) FindOne(ctx context.Context, id int) (*Role, error) {
     roleIdKey := fmt.Sprintf("%s%v", cacheRoleIdPrefix, id)
     var resp Role
     err := m.QueryRowCtx(ctx, &resp, roleIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {

@@ -10,9 +10,14 @@ import (
 )
 
 type ServiceContext struct {
-    Config      config.Config
-    AdminMiddle rest.Middleware
-    AdminModel  model.AdminModel
+    Config             config.Config
+    AdminMiddle        rest.Middleware
+    AdminModel         model.AdminModel
+    AdminLoginLogModel model.AdminLoginLogModel
+    AdminRoleGroup     model.AdminRoleGroupModel
+    Role               model.RoleModel
+    Permission         model.PermissionModel
+    RolePermission     model.RolePermissionModel
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {

@@ -14,7 +14,7 @@ type Config struct {
     CacheRedis cache.CacheConf
     Auth       struct {
         AccessSecret string
-        AccessExpire uint64
+        AccessExpire int64
     }
     AdminRpc zrpc.RpcClientConf
 }

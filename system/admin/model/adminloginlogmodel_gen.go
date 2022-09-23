@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
-	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlc"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 	"github.com/zeromicro/go-zero/core/stringx"
@@ -21,54 +20,47 @@ var (
 	adminLoginLogRows                = strings.Join(adminLoginLogFieldNames, ",")
 	adminLoginLogRowsExpectAutoSet   = strings.Join(stringx.Remove(adminLoginLogFieldNames, "`id`", "`create_time`", "`update_time`", "`create_at`", "`update_at`"), ",")
 	adminLoginLogRowsWithPlaceHolder = strings.Join(stringx.Remove(adminLoginLogFieldNames, "`id`", "`create_time`", "`update_time`", "`create_at`", "`update_at`"), "=?,") + "=?"
-
-	cacheAdminLoginLogIdPrefix = "cache:adminLoginLog:id:"
 )
 
 type (
 	adminLoginLogModel interface {
 		Insert(ctx context.Context, data *AdminLoginLog) (sql.Result, error)
-		FindOne(ctx context.Context, id int64) (*AdminLoginLog, error)
+		FindOne(ctx context.Context, id uint64) (*AdminLoginLog, error)
 		Update(ctx context.Context, data *AdminLoginLog) error
-		Delete(ctx context.Context, id int64) error
+		Delete(ctx context.Context, id uint64) error
 	}
 
 	defaultAdminLoginLogModel struct {
-		sqlc.CachedConn
+		conn  sqlx.SqlConn
 		table string
 	}
 
 	AdminLoginLog struct {
-		Id        uint     `db:"id"`
-		AdminId   uint     `db:"admin_id"`
-		LoginIp   string    `db:"login_ip"`   // 登录ip
-		LoginTime time.Time `db:"login_time"` // 登录时间
+		Id          uint64     `db:"id"`
+		AdminId     int     `db:"admin_id"`
+		AccessToken string    `db:"access_token"`
+		LoginIp     string    `db:"login_ip"`   // 登录ip
+		LoginTime   time.Time `db:"login_time"` // 登录时间
 	}
 )
 
-func newAdminLoginLogModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultAdminLoginLogModel {
+func newAdminLoginLogModel(conn sqlx.SqlConn) *defaultAdminLoginLogModel {
 	return &defaultAdminLoginLogModel{
-		CachedConn: sqlc.NewConn(conn, c),
-		table:      "`admin_login_log`",
+		conn:  conn,
+		table: "`admin_login_log`",
 	}
 }
 
-func (m *defaultAdminLoginLogModel) Delete(ctx context.Context, id int64) error {
-	adminLoginLogIdKey := fmt.Sprintf("%s%v", cacheAdminLoginLogIdPrefix, id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
-		return conn.ExecCtx(ctx, query, id)
-	}, adminLoginLogIdKey)
+func (m *defaultAdminLoginLogModel) Delete(ctx context.Context, id uint64) error {
+	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
-func (m *defaultAdminLoginLogModel) FindOne(ctx context.Context, id int64) (*AdminLoginLog, error) {
-	adminLoginLogIdKey := fmt.Sprintf("%s%v", cacheAdminLoginLogIdPrefix, id)
+func (m *defaultAdminLoginLogModel) FindOne(ctx context.Context, id uint64) (*AdminLoginLog, error) {
+	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", adminLoginLogRows, m.table)
 	var resp AdminLoginLog
-	err := m.QueryRowCtx(ctx, &resp, adminLoginLogIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {
-		query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", adminLoginLogRows, m.table)
-		return conn.QueryRowCtx(ctx, v, query, id)
-	})
+	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
 	case nil:
 		return &resp, nil
@@ -80,30 +72,15 @@ func (m *defaultAdminLoginLogModel) FindOne(ctx context.Context, id int64) (*Adm
 }
 
 func (m *defaultAdminLoginLogModel) Insert(ctx context.Context, data *AdminLoginLog) (sql.Result, error) {
-	adminLoginLogIdKey := fmt.Sprintf("%s%v", cacheAdminLoginLogIdPrefix, data.Id)
-	ret, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?)", m.table, adminLoginLogRowsExpectAutoSet)
-		return conn.ExecCtx(ctx, query, data.AdminId, data.LoginIp, data.LoginTime)
-	}, adminLoginLogIdKey)
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?)", m.table, adminLoginLogRowsExpectAutoSet)
+	ret, err := m.conn.ExecCtx(ctx, query, data.AdminId, data.AccessToken, data.LoginIp, data.LoginTime)
 	return ret, err
 }
 
 func (m *defaultAdminLoginLogModel) Update(ctx context.Context, data *AdminLoginLog) error {
-	adminLoginLogIdKey := fmt.Sprintf("%s%v", cacheAdminLoginLogIdPrefix, data.Id)
-	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, adminLoginLogRowsWithPlaceHolder)
-		return conn.ExecCtx(ctx, query, data.AdminId, data.LoginIp, data.LoginTime, data.Id)
-	}, adminLoginLogIdKey)
+	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, adminLoginLogRowsWithPlaceHolder)
+	_, err := m.conn.ExecCtx(ctx, query, data.AdminId, data.AccessToken, data.LoginIp, data.LoginTime, data.Id)
 	return err
-}
-
-func (m *defaultAdminLoginLogModel) formatPrimary(primary interface{}) string {
-	return fmt.Sprintf("%s%v", cacheAdminLoginLogIdPrefix, primary)
-}
-
-func (m *defaultAdminLoginLogModel) queryPrimary(ctx context.Context, conn sqlx.SqlConn, v, primary interface{}) error {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", adminLoginLogRows, m.table)
-	return conn.QueryRowCtx(ctx, v, query, primary)
 }
 
 func (m *defaultAdminLoginLogModel) tableName() string {
