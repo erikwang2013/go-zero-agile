@@ -22,8 +22,9 @@ var (
     adminRowsExpectAutoSet   = strings.Join(stringx.Remove(adminFieldNames, "`create_time`", "`update_time`", "`create_at`", "`update_at`"), ",")
     adminRowsWithPlaceHolder = strings.Join(stringx.Remove(adminFieldNames, "`id`", "`create_time`", "`update_time`", "`create_at`", "`update_at`"), "=?,") + "=?"
 
-    cacheAdminIdPrefix = "cache:admin:id:"
-    AdminGenderName    = map[int]string{
+    cacheAdminIdPrefix   = "cache:admin:id:"
+    cacheAdminNamePrefix = "cache:admin:name:"
+    AdminGenderName      = map[int]string{
         0: "女",
         1: "男",
         2: "保密",
@@ -45,17 +46,17 @@ type (
     }
 
     Admin struct {
-        Id            uint       `db:"id"`
-        ParentId      uint       `db:"parent_id"` // 父级id
+        Id            uint      `db:"id"`
+        ParentId      uint      `db:"parent_id"` // 父级id
         HeadImg       string    `db:"head_img"`  // 用户头像
         Name          string    `db:"name"`
         NickName      string    `db:"nick_name"` // 昵称
-        Gender        uint8       `db:"gender"`    // 性别 0=女 1=男 2=保密
+        Gender        uint8     `db:"gender"`    // 性别 0=女 1=男 2=保密
         Password      string    `db:"password"`
         Phone         string    `db:"phone"`          // 手机
         Email         string    `db:"email"`          // 邮箱
-        Status        uint8       `db:"status"`         // 状态 0=开启 1=关闭
-        IsDelete      uint8       `db:"is_delete"`      // 是否删 0=否 1=是
+        Status        uint8     `db:"status"`         // 状态 0=开启 1=关闭
+        IsDelete      uint8     `db:"is_delete"`      // 是否删 0=否 1=是
         PromotionCode string    `db:"promotion_code"` // 推广码
         Info          string    `db:"info"`           // 备注
         CreateTime    time.Time `db:"create_time"`
@@ -80,20 +81,37 @@ func (m *defaultAdminModel) Delete(ctx context.Context, id int64) error {
 }
 
 func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admin, error) {
-    adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, name)
+    adminNameKey := fmt.Sprintf("%s%v", cacheAdminNamePrefix, name)
+    id := ""
+    err := m.GetCache(adminNameKey, &id)
     var resp Admin
-    err := m.QueryRowCtx(ctx, &resp, adminIdKey, func(ctx context.Context, conn sqlx.SqlConn, v interface{}) error {
+    if err != nil {
         query := fmt.Sprintf("select %s from %s where `name` = ? and is_delete=0 limit 1", adminRows, m.table)
-        return conn.QueryRowCtx(ctx, v, query, name)
-    })
-    switch err {
-    case nil:
-        return &resp, nil
-    case sqlc.ErrNotFound:
-        return nil, ErrNotFound
-    default:
-        return nil, err
+        err := m.QueryRowNoCache(&resp, query, name)
+        switch err {
+        case nil:
+            adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, resp.Id)
+            m.CachedConn.SetCache(adminIdKey, resp)
+            m.CachedConn.SetCache(adminNameKey, resp.Id)
+            return &resp, nil
+        case sqlc.ErrNotFound:
+            return nil, ErrNotFound
+        default:
+            return nil, err
+        }
+    } else {
+        adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id)
+        err := m.GetCache(adminIdKey, &resp)
+        switch err {
+        case nil:
+            return &resp, nil
+        case sqlc.ErrNotFound:
+            return nil, ErrNotFound
+        default:
+            return nil, err
+        }
     }
+
 }
 
 func (m *defaultAdminModel) FindOne(ctx context.Context, id int64) (*Admin, error) {

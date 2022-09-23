@@ -35,7 +35,7 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 
 type LoginData struct {
     UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
-    PassWord string `json:"password" validate:"alphanum,max=6,min=30"`
+    PassWord string `json:"password" validate:"alphanum,max=30,min=6"`
 }
 
 var trans ut.Translator
@@ -73,6 +73,8 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if err != nil {
         return nil, errors.New("登录校验异常")
     }
+    logx.Error(adminInfo.Password)
+    logx.Error(req.PassWord)
     if strings.Compare(adminInfo.Password, req.PassWord) != 0 {
         return nil, errors.New("用户名或密码错误")
     }

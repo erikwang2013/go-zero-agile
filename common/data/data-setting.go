@@ -176,3 +176,14 @@ func RemoveTopStruct(fields map[string]string) string {
     }
     return rsp
 }
+
+var (
+    StatusName = map[int]string{
+        0: "开启",
+        1: "关闭",
+    }
+    IsDeleteName = map[int]string{
+        0: "未删除",
+        1: "已删除",
+    }
+)
