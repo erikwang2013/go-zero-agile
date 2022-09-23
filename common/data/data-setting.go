@@ -180,16 +180,15 @@ func RemoveTopStruct(fields map[string]string) string {
 }
 
 func RandStr(len int) string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	bytes := make([]byte, len)
-	for i := 0; i < len; i++ {
-		b := r.Intn(26) + 65
-		bytes[i] = byte(b)
-	}
-	return string(bytes)
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    bytes := make([]byte, len)
+    for i := 0; i < len; i++ {
+        b := r.Intn(26) + 65
+        bytes[i] = byte(b)
+    }
+    return string(bytes)
 
 }
-
 
 var (
     StatusName = map[int8]string{
@@ -203,18 +202,17 @@ var (
 )
 
 // 加密密码
-func HashAndSalt(pwd []byte) string {
+func HashAndSalt(pwd []byte) (string, error) {
     hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
     if err != nil {
-
+        return "", err
     }
-    return string(hash)
+    return string(hash), nil
 }
 
 // 验证密码
-func ValidatePasswords(hashedPwd string, plainPwd []byte) bool {
-    byteHash := []byte(hashedPwd)
-    err := bcrypt.CompareHashAndPassword(byteHash, plainPwd)
+func ValidatePasswords(hashedPwd []byte, plainPwd []byte) bool {
+    err := bcrypt.CompareHashAndPassword(hashedPwd, plainPwd)
     if err != nil {
         return false
     }

@@ -62,6 +62,10 @@ type (
         CreateTime    time.Time `db:"create_time"`
         UpdateTime    time.Time `db:"update_time"`
     }
+
+    setId struct {
+        Id int `json:"id"`
+    }
 )
 
 func newAdminModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultAdminModel {
@@ -82,7 +86,7 @@ func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
 
 func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admin, error) {
     adminNameKey := fmt.Sprintf("%s%v", cacheAdminNamePrefix, name)
-    id := ""
+    var id setId
     err := m.GetCache(adminNameKey, &id)
     var resp Admin
     if err != nil {
@@ -91,8 +95,9 @@ func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admi
         switch err {
         case nil:
             adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, resp.Id)
-            m.CachedConn.SetCache(adminIdKey, resp)
-            m.CachedConn.SetCache(adminNameKey, resp.Id)
+            m.SetCache(adminIdKey, resp)
+            id.Id = resp.Id
+            m.SetCache(adminNameKey, id)
             return &resp, nil
         case sqlc.ErrNotFound:
             return nil, ErrNotFound
@@ -100,7 +105,7 @@ func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admi
             return nil, err
         }
     } else {
-        adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id)
+        adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id.Id)
         err := m.GetCache(adminIdKey, &resp)
         switch err {
         case nil:

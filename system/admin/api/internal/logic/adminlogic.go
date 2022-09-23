@@ -41,28 +41,40 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         transStr := varError.Translate(trans)
         return nil, errors.New(data.RemoveTopStruct(transStr))
     }
+    adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.Name)
+    if err == nil && adminInfo != nil{
+        return nil, errors.New("用户名已存在")
+    }
+    // if adminInfo != nil && strings.Compare(adminInfo.Name, req.Name) == 0 {
+    //     return nil, errors.New("用户名已存在")
+    // }
     getTime := time.Unix(time.Now().Unix(), 0)
     setData := &model.Admin{
-        HeadImg:    req.HeadImg,
-        Name:       req.Name,
-        NickName:   req.NickName,
-        Phone:      req.Phone,
-        Email:      req.Email,
-        Gender:     req.Gender,
-        Status:     req.Status,
-        Info:       req.Info,
-        CreateTime: getTime,
-        UpdateTime: getTime,
+        HeadImg:       req.HeadImg,
+        Name:          req.Name,
+        NickName:      req.NickName,
+        Phone:         req.Phone,
+        Email:         req.Email,
+        Gender:        req.Gender,
+        Status:        req.Status,
+        Info:          req.Info,
+        PromotionCode: data.RandStr(11),
+        CreateTime:    getTime,
+        UpdateTime:    getTime,
     }
     setData.ParentId = 0
     if req.ParentId >= 1 {
         setData.ParentId = req.ParentId
     }
     password := data.RandStr(8)
-    setData.Password = data.HashAndSalt([]byte(password))
+    byct, err := data.HashAndSalt([]byte(password))
+    if err != nil {
+        return nil, errors.New("密码生成失败")
+    }
+    setData.Password = byct
     insert, err := l.svcCtx.AdminModel.Insert(l.ctx, setData)
     if err != nil {
-        return nil, errors.New("登录校验异常")
+        return nil, errors.New("新增用户失败")
     }
     getId, _ := insert.LastInsertId()
     return &types.AdminInfoReply{

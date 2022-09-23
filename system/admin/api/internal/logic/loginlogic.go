@@ -64,7 +64,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if err != nil {
         return nil, errors.New("登录校验异常")
     }
-    if strings.Compare(adminInfo.Password, req.Password) != 0 {
+    if data.ValidatePasswords([]byte(req.Password), []byte(adminInfo.Password)) == false {
         return nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)

@@ -3,7 +3,7 @@ package types
 
 type LoginReq struct {
     UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
-    Password string `json:"password" validate:"alphanum,max=30,min=6"`
+    Password string `json:"password" validate:"required,max=100,min=6"`
 }
 
 type LoginReply struct {
