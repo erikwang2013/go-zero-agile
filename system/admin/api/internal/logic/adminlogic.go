@@ -24,7 +24,17 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic 
 }
 
 func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
-	// todo: add your logic here and delete this line
+	return
+}
 
+func (l *AdminLogic) Create(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
+	return
+}
+
+func (l *AdminLogic) Delete(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
+	return
+}
+
+func (l *AdminLogic) Put(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
 	return
 }

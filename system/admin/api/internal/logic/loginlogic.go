@@ -61,7 +61,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     l.validateRegister(validate)
     loginVal := &LoginData{
         UserName: req.UserName,
-        PassWord: req.PassWord,
+        PassWord: req.Password,
     }
 
     err = validate.Struct(loginVal)
@@ -74,9 +74,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if err != nil {
         return nil, errors.New("登录校验异常")
     }
-    logx.Error(adminInfo.Password)
-    logx.Error(req.PassWord)
-    if strings.Compare(adminInfo.Password, req.PassWord) != 0 {
+    if strings.Compare(adminInfo.Password, req.Password) != 0 {
         return nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)

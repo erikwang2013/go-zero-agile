@@ -3,11 +3,11 @@ package types
 
 type LoginReq struct {
 	UserName string `json:"user_name"`
-	PassWord string `json:"password"`
+	Password string `json:"password"`
 }
 
 type LoginReply struct {
-	Id           int   `json:"id"`
+	Id           int    `json:"id"`
 	Name         string `json:"name"`
 	AccessToken  string `json:"access_token"`
 	AccessExpire int64  `json:"access_expire"`
@@ -15,10 +15,44 @@ type LoginReply struct {
 }
 
 type AdminInfoReq struct {
-	Id int `json:"id"`
+	Id       int    `json:"id"`
+	ParentId int    `json:"parent_id"`
+	NickName string `json:"nick_name"`
+	Name     string `json:"name"`
+	Phone    string `json:"phone"` // 手机
+	Email    string `json:"email"` // 邮箱
 }
 
 type AdminInfoReply struct {
-	Id   int   `json:"id"`
+	Id            int             `json:"id"`
+	ParentId      int             `json:"parent_id"` // 父级id
+	HeadImg       string          `json:"head_img"`  // 用户头像
+	Name          string          `json:"name"`
+	NickName      string          `json:"nick_name"`      // 昵称
+	Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
+	Phone         string          `json:"phone"`          // 手机
+	Email         string          `json:"email"`          // 邮箱
+	Status        StatusValueName `json:"status"`         // 状态 0=开启 1=关闭
+	IsDelete      StatusValueName `json:"is_delete"`      // 是否删 0=否 1=是
+	PromotionCode string          `json:"promotion_code"` // 推广码
+	Info          string          `json:"info"`           // 备注
+	CreateTime    int64           `json:"create_time"`
+	UpdateTime    int64           `json:"update_time"`
+}
+
+type StatusValueName struct {
+	Id   int8   `json:"id"`
 	Name string `json:"name"`
+}
+
+type AdminAddReq struct {
+	ParentId int    `json:"parent_id"` // 父级id
+	HeadImg  string `json:"head_img"`  // 用户头像
+	Name     string `json:"name"`
+	NickName string `json:"nick_name"` // 昵称
+	Gender   int8   `json:"gender"`    // 性别 0=女 1=男 2=保密
+	Phone    string `json:"phone"`     // 手机
+	Email    string `json:"email"`     // 邮箱
+	Status   int8   `json:"status"`    // 状态 0=开启 1=关闭
+	Info     string `json:"info"`      // 备注
 }
