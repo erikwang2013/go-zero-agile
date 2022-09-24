@@ -51,13 +51,13 @@ func newRolePermissionModel(conn sqlx.SqlConn) *defaultRolePermissionModel {
 }
 
 func (m *defaultRolePermissionModel) Delete(ctx context.Context, id int64) error {
-	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=1", m.table)
 	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
 func (m *defaultRolePermissionModel) FindOne(ctx context.Context, id int64) (*RolePermission, error) {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", rolePermissionRows, m.table)
+	query := fmt.Sprintf("select %s from %s where `id` = ? and is_delete=0 limit 1", rolePermissionRows, m.table)
 	var resp RolePermission
 	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
@@ -77,7 +77,7 @@ func (m *defaultRolePermissionModel) Insert(ctx context.Context, data *RolePermi
 }
 
 func (m *defaultRolePermissionModel) Update(ctx context.Context, data *RolePermission) error {
-	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, rolePermissionRowsWithPlaceHolder)
+	query := fmt.Sprintf("update %s set %s where `id` = ? and is_delete=0", m.table, rolePermissionRowsWithPlaceHolder)
 	_, err := m.conn.ExecCtx(ctx, query, data.RoleId, data.PermissionId, data.Status, data.IsDelete, data.Id)
 	return err
 }

@@ -55,13 +55,13 @@ func newRoleModel(conn sqlx.SqlConn) *defaultRoleModel {
 }
 
 func (m *defaultRoleModel) Delete(ctx context.Context, id int64) error {
-	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=1", m.table)
 	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
 func (m *defaultRoleModel) FindOne(ctx context.Context, id int64) (*Role, error) {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", roleRows, m.table)
+	query := fmt.Sprintf("select %s from %s where `id` = ? and is_delete=0 limit 1", roleRows, m.table)
 	var resp Role
 	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
@@ -81,7 +81,7 @@ func (m *defaultRoleModel) Insert(ctx context.Context, data *Role) (sql.Result, 
 }
 
 func (m *defaultRoleModel) Update(ctx context.Context, data *Role) error {
-	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, roleRowsWithPlaceHolder)
+	query := fmt.Sprintf("update %s set %s where `id` = ? and is_delete=0", m.table, roleRowsWithPlaceHolder)
 	_, err := m.conn.ExecCtx(ctx, query, data.ParentId, data.Name, data.Info, data.Code, data.Status, data.IsDelete, data.Id)
 	return err
 }

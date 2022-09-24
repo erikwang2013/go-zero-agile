@@ -51,13 +51,13 @@ func newAdminRoleGroupModel(conn sqlx.SqlConn) *defaultAdminRoleGroupModel {
 }
 
 func (m *defaultAdminRoleGroupModel) Delete(ctx context.Context, id int64) error {
-	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=1", m.table)
 	_, err := m.conn.ExecCtx(ctx, query, id)
 	return err
 }
 
 func (m *defaultAdminRoleGroupModel) FindOne(ctx context.Context, id int64) (*AdminRoleGroup, error) {
-	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", adminRoleGroupRows, m.table)
+	query := fmt.Sprintf("select %s from %s where `id` = ? and is_delete=0 limit 1", adminRoleGroupRows, m.table)
 	var resp AdminRoleGroup
 	err := m.conn.QueryRowCtx(ctx, &resp, query, id)
 	switch err {
@@ -77,7 +77,7 @@ func (m *defaultAdminRoleGroupModel) Insert(ctx context.Context, data *AdminRole
 }
 
 func (m *defaultAdminRoleGroupModel) Update(ctx context.Context, data *AdminRoleGroup) error {
-	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, adminRoleGroupRowsWithPlaceHolder)
+	query := fmt.Sprintf("update %s set %s where `id` = ? and is_delete=0", m.table, adminRoleGroupRowsWithPlaceHolder)
 	_, err := m.conn.ExecCtx(ctx, query, data.AdminId, data.RoleId, data.Status, data.IsDelete, data.Id)
 	return err
 }
