@@ -67,10 +67,14 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         setData.ParentId = req.ParentId
     }
     password := data.RandStr(8)
-    byct, err := data.HashAndSalt([]byte(password))
+    logx.Info("===密码生成=1=")
+    logx.Info(password)
+    byct, err := data.HashAndSalt(password)
     if err != nil {
         return nil, errors.New("密码生成失败")
     }
+    logx.Info("===密码生成=2=")
+    logx.Info(byct)
     setData.Password = byct
     insert, err := l.svcCtx.AdminModel.Insert(l.ctx, setData)
     if err != nil {

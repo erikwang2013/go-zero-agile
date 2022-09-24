@@ -1,9 +1,6 @@
-package model
+package group
 
-import (
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
-)
+import "github.com/zeromicro/go-zero/core/stores/sqlx"
 
 var _ AdminRoleGroupModel = (*customAdminRoleGroupModel)(nil)
 
@@ -20,8 +17,8 @@ type (
 )
 
 // NewAdminRoleGroupModel returns a model for the database table.
-func NewAdminRoleGroupModel(conn sqlx.SqlConn, c cache.CacheConf) AdminRoleGroupModel {
+func NewAdminRoleGroupModel(conn sqlx.SqlConn) AdminRoleGroupModel {
 	return &customAdminRoleGroupModel{
-		defaultAdminRoleGroupModel: newAdminRoleGroupModel(conn, c),
+		defaultAdminRoleGroupModel: newAdminRoleGroupModel(conn),
 	}
 }

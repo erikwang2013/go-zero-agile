@@ -1,4 +1,4 @@
-package model
+package admin
 
 import (
 	"github.com/zeromicro/go-zero/core/stores/cache"

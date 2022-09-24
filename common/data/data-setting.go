@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/sony/sonyflake"
+	"github.com/zeromicro/go-zero/core/logx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -202,8 +203,8 @@ var (
 )
 
 // 加密密码
-func HashAndSalt(pwd []byte) (string, error) {
-    hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+func HashAndSalt(pwd string) (string, error) {
+    hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
     if err != nil {
         return "", err
     }
@@ -211,9 +212,11 @@ func HashAndSalt(pwd []byte) (string, error) {
 }
 
 // 验证密码
-func ValidatePasswords(hashedPwd []byte, plainPwd []byte) bool {
-    err := bcrypt.CompareHashAndPassword(hashedPwd, plainPwd)
+func ValidatePasswords(hashedPwd, plainPwd string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
     if err != nil {
+        logx.Info("==验证密码==")
+        logx.Info(err)
         return false
     }
     return true

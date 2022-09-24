@@ -64,7 +64,10 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if err != nil {
         return nil, errors.New("登录校验异常")
     }
-    if data.ValidatePasswords([]byte(req.Password), []byte(adminInfo.Password)) == false {
+    logx.Info("===获取密码===")
+    logx.Info(adminInfo.Password)
+    logx.Info(req.Password)
+    if data.ValidatePasswords(adminInfo.Password,req.Password) == false {
         return nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
@@ -75,10 +78,11 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     adminLog := &model.AdminLoginLog{
         Id:          data.NextSonyFlakeIdInt64(),
         AdminId:     adminInfo.Id,
+        LoginIp: "127.0.0.1",
         AccessToken: token,
         LoginTime:   getTime,
     }
-    go l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
+    l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
     return &types.LoginReply{
         Id:           adminInfo.Id,
         Name:         adminInfo.Name,

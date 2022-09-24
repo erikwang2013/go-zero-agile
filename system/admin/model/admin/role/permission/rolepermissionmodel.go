@@ -1,9 +1,6 @@
-package model
+package permission
 
-import (
-	"github.com/zeromicro/go-zero/core/stores/cache"
-	"github.com/zeromicro/go-zero/core/stores/sqlx"
-)
+import "github.com/zeromicro/go-zero/core/stores/sqlx"
 
 var _ RolePermissionModel = (*customRolePermissionModel)(nil)
 
@@ -20,8 +17,8 @@ type (
 )
 
 // NewRolePermissionModel returns a model for the database table.
-func NewRolePermissionModel(conn sqlx.SqlConn, c cache.CacheConf) RolePermissionModel {
+func NewRolePermissionModel(conn sqlx.SqlConn) RolePermissionModel {
 	return &customRolePermissionModel{
-		defaultRolePermissionModel: newRolePermissionModel(conn, c),
+		defaultRolePermissionModel: newRolePermissionModel(conn),
 	}
 }
