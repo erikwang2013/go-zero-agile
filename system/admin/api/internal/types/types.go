@@ -46,8 +46,8 @@ type AdminInfoReply struct {
 }
 
 type StatusValueName struct {
-    Id   int8   `json:"id"`
-    Name string `json:"name"`
+    Key int8   `json:"key"`
+    Val string `json:"val"`
 }
 
 type AdminAddReq struct {
