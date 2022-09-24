@@ -10,7 +10,7 @@ import (
 	"erik-agile/common/data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
-	"erik-agile/system/admin/model"
+	adminLoginLog "erik-agile/system/admin/model/admin/login/log"
 
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -67,7 +67,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     logx.Info("===获取密码===")
     logx.Info(adminInfo.Password)
     logx.Info(req.Password)
-    if data.ValidatePasswords(adminInfo.Password,req.Password) == false {
+    if data.ValidatePasswords(adminInfo.Password, req.Password) == false {
         return nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
@@ -75,14 +75,17 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         return nil, errors.New("令牌生成失败")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
-    adminLog := &model.AdminLoginLog{
+    adminLog := &adminLoginLog.AdminLoginLog{
         Id:          data.NextSonyFlakeIdInt64(),
         AdminId:     adminInfo.Id,
-        LoginIp: "127.0.0.1",
+        LoginIp:     data.GetIP(),
         AccessToken: token,
         LoginTime:   getTime,
     }
-    l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
+    _, err = l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
+    if err != nil {
+        return nil, errors.New("登录记录失败")
+    }
     return &types.LoginReply{
         Id:           adminInfo.Id,
         Name:         adminInfo.Name,

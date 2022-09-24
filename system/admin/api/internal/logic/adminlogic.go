@@ -8,7 +8,7 @@ import (
 	"erik-agile/common/data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
-	"erik-agile/system/admin/model"
+	AdminModel "erik-agile/system/admin/model/admin"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -49,7 +49,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     //     return nil, errors.New("用户名已存在")
     // }
     getTime := time.Unix(time.Now().Unix(), 0)
-    setData := &model.Admin{
+    setData := &AdminModel.Admin{
         HeadImg:       req.HeadImg,
         Name:          req.Name,
         NickName:      req.NickName,
@@ -90,7 +90,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         Password: password,
         Gender: types.StatusValueName{
             Id:   setData.Gender,
-            Name: model.AdminGenderName[setData.Gender],
+            Name: AdminModel.AdminGenderName[setData.Gender],
         },
         Phone: setData.Phone,
         Email: setData.Email,
