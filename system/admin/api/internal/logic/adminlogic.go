@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"erik-agile/common/data"
+	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	AdminModel "erik-agile/system/admin/model/admin"
@@ -31,12 +31,25 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic 
 func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
     validate := validator.New()
     validateRegister(validate)
+    logx.Info("==打印入参==")
+    logx.Info(req)
     err = validate.Struct(req)
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(data.RemoveTopStruct(transStr))
+        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
+    getData := &AdminModel.Admin{
+        Id:       req.Id,
+        ParentId: req.ParentId,
+        Name:     req.Name,
+        NickName: req.NickName,
+        Phone:    req.Phone,
+        Email:    req.Email,
+        Gender:   req.Gender,
+        Status:   req.Status,
+    }
+    l.svcCtx.AdminModel.All(l.ctx,getData)
     return
 }
 
@@ -47,10 +60,10 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(data.RemoveTopStruct(transStr))
+        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.Name)
-    if err == nil && adminInfo != nil{
+    if err == nil && adminInfo != nil {
         return nil, errors.New("用户名已存在")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
@@ -63,7 +76,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         Gender:        req.Gender,
         Status:        req.Status,
         Info:          req.Info,
-        PromotionCode: data.RandStr(11),
+        PromotionCode: dataFormat.RandStr(11),
         CreateTime:    getTime,
         UpdateTime:    getTime,
     }
@@ -71,10 +84,10 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     if req.ParentId >= 1 {
         setData.ParentId = req.ParentId
     }
-    password := data.RandStr(8)
+    password := dataFormat.RandStr(8)
     logx.Info("===密码生成=1=")
     logx.Info(password)
-    byct, err := data.HashAndSalt(password)
+    byct, err := dataFormat.HashAndSalt(password)
     if err != nil {
         return nil, errors.New("密码生成失败")
     }
@@ -101,11 +114,11 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         Email: setData.Email,
         Status: types.StatusValueName{
             Id:   setData.Status,
-            Name: data.StatusName[setData.Status],
+            Name: dataFormat.StatusName[setData.Status],
         },
         IsDelete: types.StatusValueName{
             Id:   setData.IsDelete,
-            Name: data.IsDeleteName[setData.IsDelete],
+            Name: dataFormat.IsDeleteName[setData.IsDelete],
         },
         PromotionCode: setData.PromotionCode,
         Info:          setData.Info,

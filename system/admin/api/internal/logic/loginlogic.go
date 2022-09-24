@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"erik-agile/common/data"
+	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	adminLoginLog "erik-agile/system/admin/model/admin/login/log"
@@ -58,7 +58,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(data.RemoveTopStruct(transStr))
+        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
     if err != nil {
@@ -67,7 +67,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     logx.Info("===获取密码===")
     logx.Info(adminInfo.Password)
     logx.Info(req.Password)
-    if data.ValidatePasswords(adminInfo.Password, req.Password) == false {
+    if dataFormat.ValidatePasswords(adminInfo.Password, req.Password) == false {
         return nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
@@ -76,9 +76,9 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     }
     getTime := time.Unix(time.Now().Unix(), 0)
     adminLog := &adminLoginLog.AdminLoginLog{
-        Id:          data.NextSonyFlakeIdInt64(),
+        Id:          dataFormat.NextSonyFlakeIdInt64(),
         AdminId:     adminInfo.Id,
-        LoginIp:     data.GetIP(),
+        LoginIp:     dataFormat.GetIP(),
         AccessToken: token,
         LoginTime:   getTime,
     }

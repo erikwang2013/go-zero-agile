@@ -5,10 +5,12 @@ package admin
 import (
     "context"
     "database/sql"
+    "erik-agile/common/data-format"
     "fmt"
     "strings"
     "time"
 
+    "github.com/zeromicro/go-zero/core/logx"
     "github.com/zeromicro/go-zero/core/stores/builder"
     "github.com/zeromicro/go-zero/core/stores/cache"
     "github.com/zeromicro/go-zero/core/stores/sqlc"
@@ -36,6 +38,7 @@ type (
         Insert(ctx context.Context, data *Admin) (sql.Result, error)
         FindOne(ctx context.Context, id int) (*Admin, error)
         FindOneName(ctx context.Context, name string) (*Admin, error)
+        All(ctx context.Context, data *Admin) (*[]Admin, error)
         Update(ctx context.Context, data *Admin) error
         Delete(ctx context.Context, id int) error
     }
@@ -82,6 +85,35 @@ func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
         return conn.ExecCtx(ctx, query, id)
     }, adminIdKey)
     return err
+}
+
+func (m *defaultAdminModel) All(ctx context.Context, data *Admin) (*[]Admin, error) {
+    sql := "select %s from %s where is_delete=0"
+    str := []string{}
+    if len(data.NickName) > 0 {
+        sql += " like nick_name ?"
+        str = append(str, data.NickName)
+    }
+    if len(data.Name) > 0 {
+        sql += " like name ?"
+        str = append(str, data.Name)
+    }
+    if len(data.Phone) > 0 {
+        sql += " like phone ?"
+        str = append(str, data.Phone)
+    }
+    if len(data.Email) > 0 {
+        sql += " like email ?"
+        str = append(str, data.Email)
+    }
+    if data.Id > 0 {
+        sql += " and id=?"
+        str = append(str, dataFormat.IntToString(data.Id))
+    }
+    logx.Info("====打印sql===")
+    logx.Info(sql)
+    return &[]Admin{}, nil
+    //data.Page()
 }
 
 func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admin, error) {
