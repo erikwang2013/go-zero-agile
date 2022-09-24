@@ -78,7 +78,7 @@ func newAdminModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultAdminModel {
 func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
     adminIdKey := fmt.Sprintf("%s%v", cacheAdminIdPrefix, id)
     _, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
-        query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=0 ", m.table)
+        query := fmt.Sprintf("delete from %s where `id` = ? and is_delete=1 ", m.table)
         return conn.ExecCtx(ctx, query, id)
     }, adminIdKey)
     return err

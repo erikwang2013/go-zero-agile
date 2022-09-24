@@ -29,6 +29,14 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic 
 }
 
 func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
+    validate := validator.New()
+    validateRegister(validate)
+    err = validate.Struct(req)
+    if err != nil {
+        varError := err.(validator.ValidationErrors)
+        transStr := varError.Translate(trans)
+        return nil, errors.New(data.RemoveTopStruct(transStr))
+    }
     return
 }
 
@@ -45,9 +53,6 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     if err == nil && adminInfo != nil{
         return nil, errors.New("用户名已存在")
     }
-    // if adminInfo != nil && strings.Compare(adminInfo.Name, req.Name) == 0 {
-    //     return nil, errors.New("用户名已存在")
-    // }
     getTime := time.Unix(time.Now().Unix(), 0)
     setData := &AdminModel.Admin{
         HeadImg:       req.HeadImg,

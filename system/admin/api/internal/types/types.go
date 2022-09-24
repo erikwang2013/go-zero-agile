@@ -21,6 +21,8 @@ type AdminInfoReq struct {
     Name     string `json:"name" validate:"alphanum,max=30,min=4"`
     Phone    string `json:"phone" validate:"e164"`  // 手机
     Email    string `json:"email" validate:"email"` // 邮箱
+    Page     int    `json:"page" validate:"number,max=11,min=1"`
+    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
 }
 
 type AdminInfoReply struct {
