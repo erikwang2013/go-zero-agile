@@ -7,7 +7,6 @@ import (
     "database/sql"
     "erik-agile/common/data-format"
     "fmt"
-    "github.com/zeromicro/go-zero/core/logx"
     "github.com/zeromicro/go-zero/core/stores/builder"
     "github.com/zeromicro/go-zero/core/stores/cache"
     "github.com/zeromicro/go-zero/core/stores/sqlc"
@@ -15,6 +14,7 @@ import (
     "github.com/zeromicro/go-zero/core/stringx"
     "strings"
     "time"
+    "github.com/zeromicro/go-zero/core/logx"
 )
 
 var (
@@ -123,7 +123,7 @@ func (m *defaultAdminModel) All(ctx context.Context, data *Admin, page, limit in
     }
     var resp []*Admin
     query := fmt.Sprintf(sql, adminRows, m.table)
-    logx.Info("===查询sql==")
+         logx.Info("===查询sql==")
     logx.Info(query)
     err := m.QueryRowsNoCache(&resp, query, str)
     logx.Info("===查询报错==")

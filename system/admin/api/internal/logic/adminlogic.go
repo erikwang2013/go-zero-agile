@@ -85,31 +85,32 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
         Gender:   req.Gender,
         Status:   req.Status,
     }
-    all, err := l.svcCtx.AdminModel.All(l.ctx, getData, req.Page, req.Limit)
-    if err != nil {
-        return nil, errors.New("查询用户列表失败")
-    }
+    l.svcCtx.Gorm.Where(getData)
+    // all, err := l.svcCtx.AdminModel.All(l.ctx, getData, req.Page, req.Limit)
+    // if err != nil {
+    //     return nil, errors.New("查询用户列表失败")
+    // }
     var getAll []*types.AdminInfoReply
-    for _, v := range all {
-        r := &types.AdminInfoReply{
-            Id:            int(v.Id),
-            ParentId:      v.ParentId,
-            HeadImg:       v.HeadImg,
-            Name:          v.Name,
-            NickName:      v.NickName,
-            Password:      "",
-            Gender:        types.StatusValueName{Key: v.Gender, Val: AdminModel.AdminGenderName[v.Gender]},
-            Phone:         v.Phone,
-            Email:         v.Email,
-            Status:        types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
-            IsDelete:      types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
-            PromotionCode: v.PromotionCode,
-            Info:          v.Info,
-            CreateTime:    v.CreateTime.Unix(),
-            UpdateTime:    v.UpdateTime.Unix(),
-        }
-        getAll = append(getAll, r)
-    }
+    // for _, v := range all {
+    //     r := &types.AdminInfoReply{
+    //         Id:            int(v.Id),
+    //         ParentId:      v.ParentId,
+    //         HeadImg:       v.HeadImg,
+    //         Name:          v.Name,
+    //         NickName:      v.NickName,
+    //         Password:      "",
+    //         Gender:        types.StatusValueName{Key: v.Gender, Val: AdminModel.AdminGenderName[v.Gender]},
+    //         Phone:         v.Phone,
+    //         Email:         v.Email,
+    //         Status:        types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
+    //         IsDelete:      types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
+    //         PromotionCode: v.PromotionCode,
+    //         Info:          v.Info,
+    //         CreateTime:    v.CreateTime.Unix(),
+    //         UpdateTime:    v.UpdateTime.Unix(),
+    //     }
+    //     getAll = append(getAll, &r)
+    // }
 
     return getAll, nil
 }
