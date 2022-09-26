@@ -3,7 +3,7 @@ package types
 
 type LoginReq struct {
     UserName string `json:"user_name" validate:"alphanum,max=20,min=4"`
-    Password string `json:"password" validate:"required,max=100,min=6"`
+    Password string `json:"password" validate:"alphanum,max=30,min=6"`
 }
 
 type LoginReply struct {
@@ -15,16 +15,16 @@ type LoginReply struct {
 }
 
 type AdminInfoReq struct {
-    Id       int    `json:"id" validate:"number,min=0,omitempty"`
-    ParentId int    `json:"parent_id" validate:"number,max=18,min=0,omitempty"`
-    NickName string `json:"nick_name" validate:"alphanum,max=30,min=4,omitempty"`
-    Name     string `json:"name" validate:"alphanum,max=30,min=4,omitempty"`
-    Phone    string `json:"phone" validate:"e164,omitempty"`  // 手机
-    Email    string `json:"email" validate:"email,omitempty"` // 邮箱
-    Status   int8   `json:"status" validate:"number,min=0,max=1,omitempty"`
-    Gender   int8   `json:"gender" validate:"number,min=0,max=2,omitempty"`
-    Page     int    `json:"page" validate:"number,min=1,isdefault=1"`
-    Limit    int    `json:"limit" validate:"number,min=1,isdefault=10"`
+    Id       int    `json:"id,optional" validate:"number,max=18,min=1"`
+    ParentId int    `json:"parent_id,optional" validate:"number,max=18,min=0"`
+    NickName string `json:"nick_name,optional" validate:"alphanum,max=30,min=4"`
+    Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
+    Phone    string `json:"phone,optional" validate:"e164"`  // 手机
+    Email    string `json:"email,optional" validate:"email"` // 邮箱
+    Status   int8   `json:"status,optional" validate:"number,min=0,max=1"`
+    Gender   int8   `json:"gender,optional" validate:"number,min=0,max=2"`
+    Page     int    `json:"page" validate:"number,max=11,min=1"`
+    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
 }
 
 type AdminInfoReply struct {
@@ -33,7 +33,7 @@ type AdminInfoReply struct {
     HeadImg       string          `json:"head_img"`  // 用户头像
     Name          string          `json:"name"`
     NickName      string          `json:"nick_name"` // 昵称
-    Password      string          `json:"password"`
+    Password      string          `json:"password,optional"`
     Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
     Phone         string          `json:"phone"`          // 手机
     Email         string          `json:"email"`          // 邮箱
@@ -51,13 +51,13 @@ type StatusValueName struct {
 }
 
 type AdminAddReq struct {
-    ParentId int    `json:"parent_id" validate:"number,max=18,min=0"` // 父级id
+    ParentId int    `json:"parent_id" validate:"number,max=18,min=1"` // 父级id
     HeadImg  string `json:"head_img" validate:"url,max=250,min=10"`   // 用户头像
     Name     string `json:"name" validate:"alphanum,max=30,min=4"`
-    NickName string `json:"nick_name" validate:"required,max=30,min=4"` // 昵称
-    Gender   int8   `json:"gender" validate:"number,min=0,max=2"`       // 性别 0=女 1=男 2=保密
-    Phone    string `json:"phone" validate:"len=11"`                    // 手机
+    NickName string `json:"nick_name" validate:"alphanum,max=30,min=4"` // 昵称
+    Gender   int8   `json:"gender" validate:"number,len=1"`             // 性别 0=女 1=男 2=保密
+    Phone    string `json:"phone" validate:"e164"`                      // 手机
     Email    string `json:"email" validate:"email"`                     // 邮箱
-    Status   int8   `json:"status" validate:"number,min=0,max=1"`       // 状态 0=开启 1=关闭
-    Info     string `json:"info" validate:"required,max=100"`           // 备注
+    Status   int8   `json:"status" validate:"number,len=1"`             // 状态 0=开启 1=关闭
+    Info     string `json:"info" validate:"alphanum,max=100"`           // 备注
 }

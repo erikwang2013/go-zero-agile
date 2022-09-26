@@ -7,15 +7,14 @@ import (
     "database/sql"
     "erik-agile/common/data-format"
     "fmt"
-    "strings"
-    "time"
-
     "github.com/zeromicro/go-zero/core/logx"
     "github.com/zeromicro/go-zero/core/stores/builder"
     "github.com/zeromicro/go-zero/core/stores/cache"
     "github.com/zeromicro/go-zero/core/stores/sqlc"
     "github.com/zeromicro/go-zero/core/stores/sqlx"
     "github.com/zeromicro/go-zero/core/stringx"
+    "strings"
+    "time"
 )
 
 var (
@@ -38,7 +37,7 @@ type (
         Insert(ctx context.Context, data *Admin) (sql.Result, error)
         FindOne(ctx context.Context, id int) (*Admin, error)
         FindOneName(ctx context.Context, name string) (*Admin, error)
-        All(ctx context.Context, data *Admin, page, limit int) (*[]Admin, error)
+        All(ctx context.Context, data *Admin, page, limit int) ([]*Admin, error)
         Update(ctx context.Context, data *Admin) error
         Delete(ctx context.Context, id int) error
     }
@@ -87,7 +86,7 @@ func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
     return err
 }
 
-func (m *defaultAdminModel) All(ctx context.Context, data *Admin, page, limit int) (*[]Admin, error) {
+func (m *defaultAdminModel) All(ctx context.Context, data *Admin, page, limit int) ([]*Admin, error) {
     sql := "select %s from %s where is_delete=0"
     str := []string{}
     if len(data.NickName) > 0 {
@@ -110,22 +109,33 @@ func (m *defaultAdminModel) All(ctx context.Context, data *Admin, page, limit in
         sql += " and id=?"
         str = append(str, dataFormat.IntToString(data.Id))
     }
-    if data.ParentId > 0 {
+    if data.ParentId >= 0 {
         sql += " and parent_id=?"
         str = append(str, dataFormat.IntToString(data.ParentId))
     }
-    if data.Gender > 0 {
+    if data.Gender >= 0 {
         sql += " and gender=?"
         str = append(str, dataFormat.IntToString(int(data.Gender)))
     }
-    if data.Status > 0 {
+    if data.Status >= 0 {
         sql += " and status=?"
         str = append(str, dataFormat.IntToString(int(data.Status)))
     }
-    logx.Info("====打印sql===")
-    logx.Info(sql)
-    return &[]Admin{}, nil
-    //data.Page()
+    var resp []*Admin
+    query := fmt.Sprintf(sql, adminRows, m.table)
+    logx.Info("===查询sql==")
+    logx.Info(query)
+    err := m.QueryRowsNoCache(&resp, query, str)
+    logx.Info("===查询报错==")
+    logx.Info(err)
+    switch err {
+    case nil:
+        return resp, nil
+    case sqlc.ErrNotFound:
+        return nil, ErrNotFound
+    default:
+        return nil, err
+    }
 }
 
 func (m *defaultAdminModel) FindOneName(ctx context.Context, name string) (*Admin, error) {
