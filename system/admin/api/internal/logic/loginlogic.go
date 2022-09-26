@@ -62,7 +62,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         transStr := varError.Translate(trans)
         return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    var adminInfo model.Admin
+    var adminInfo *model.Admin
     resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName}).First(&adminInfo)
     //adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
     if resultAdmin.Error != nil {
