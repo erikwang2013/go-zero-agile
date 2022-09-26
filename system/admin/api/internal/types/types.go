@@ -15,14 +15,14 @@ type LoginReply struct {
 }
 
 type AdminInfoReq struct {
-    Id       int    `json:"id" validate:"number,min=0,isdefault=0"`
-    ParentId int    `json:"parent_id" validate:"number,max=18,min=0,isdefault=-1"`
-    NickName string `json:"nick_name" validate:"alphanum,max=30,min=4,isdefault=''"`
-    Name     string `json:"name" validate:"alphanum,max=30,min=4,isdefault=''"`
-    Phone    string `json:"phone" validate:"e164,isdefault=''"`  // 手机
-    Email    string `json:"email" validate:"email,isdefault=''"` // 邮箱
-    Status   int8   `json:"status" validate:"number,min=0,max=1,isdefault=-1"`
-    Gender   int8   `json:"gender" validate:"number,min=0,max=2,isdefault=-1"`
+    Id       int    `json:"id" validate:"number,min=0,omitempty"`
+    ParentId int    `json:"parent_id" validate:"number,max=18,min=0,omitempty"`
+    NickName string `json:"nick_name" validate:"alphanum,max=30,min=4,omitempty"`
+    Name     string `json:"name" validate:"alphanum,max=30,min=4,omitempty"`
+    Phone    string `json:"phone" validate:"e164,omitempty"`  // 手机
+    Email    string `json:"email" validate:"email,omitempty"` // 邮箱
+    Status   int8   `json:"status" validate:"number,min=0,max=1,omitempty"`
+    Gender   int8   `json:"gender" validate:"number,min=0,max=2,omitempty"`
     Page     int    `json:"page" validate:"number,min=1,isdefault=1"`
     Limit    int    `json:"limit" validate:"number,min=1,isdefault=10"`
 }

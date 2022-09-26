@@ -10,5 +10,5 @@ CacheRedis:
     Type: node
 Auth:
   AccessSecret: 3nYd69iRFTzfvl4AIDtcroVsP1UOaL7euyXhxj2mqESMZH8WQBCwN0K5JkbpGg3Z
-  AccessExpire: 86400
+  AccessExpire: 604800
 ServiceName: admin-log

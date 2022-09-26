@@ -29,16 +29,18 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic 
 }
 
 func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
-    validate := validator.New()
-    validateRegister(validate)
-    logx.Info("==打印入参==")
+    // validate := validator.New()
+    // validateRegister(validate)
+    // logx.Info("==打印入参==")
+    // logx.Info(req)
+    // err = validate.Struct(req)
+    // if err != nil {
+    //     varError := err.(validator.ValidationErrors)
+    //     transStr := varError.Translate(trans)
+    //     return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+    // }
+    logx.Info("===打印请求===")
     logx.Info(req)
-    err = validate.Struct(req)
-    if err != nil {
-        varError := err.(validator.ValidationErrors)
-        transStr := varError.Translate(trans)
-        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
-    }
     getData := &AdminModel.Admin{
         Id:       req.Id,
         ParentId: req.ParentId,
@@ -49,7 +51,7 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp *types.AdminInfoReply,
         Gender:   req.Gender,
         Status:   req.Status,
     }
-    l.svcCtx.AdminModel.All(l.ctx,getData)
+    l.svcCtx.AdminModel.All(l.ctx,getData,req.Page,req.Limit)
     return
 }
 

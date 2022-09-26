@@ -38,7 +38,7 @@ type (
         Insert(ctx context.Context, data *Admin) (sql.Result, error)
         FindOne(ctx context.Context, id int) (*Admin, error)
         FindOneName(ctx context.Context, name string) (*Admin, error)
-        All(ctx context.Context, data *Admin) (*[]Admin, error)
+        All(ctx context.Context, data *Admin, page, limit int) (*[]Admin, error)
         Update(ctx context.Context, data *Admin) error
         Delete(ctx context.Context, id int) error
     }
@@ -87,7 +87,7 @@ func (m *defaultAdminModel) Delete(ctx context.Context, id int) error {
     return err
 }
 
-func (m *defaultAdminModel) All(ctx context.Context, data *Admin) (*[]Admin, error) {
+func (m *defaultAdminModel) All(ctx context.Context, data *Admin, page, limit int) (*[]Admin, error) {
     sql := "select %s from %s where is_delete=0"
     str := []string{}
     if len(data.NickName) > 0 {
@@ -109,6 +109,18 @@ func (m *defaultAdminModel) All(ctx context.Context, data *Admin) (*[]Admin, err
     if data.Id > 0 {
         sql += " and id=?"
         str = append(str, dataFormat.IntToString(data.Id))
+    }
+    if data.ParentId > 0 {
+        sql += " and parent_id=?"
+        str = append(str, dataFormat.IntToString(data.ParentId))
+    }
+    if data.Gender > 0 {
+        sql += " and gender=?"
+        str = append(str, dataFormat.IntToString(int(data.Gender)))
+    }
+    if data.Status > 0 {
+        sql += " and status=?"
+        str = append(str, dataFormat.IntToString(int(data.Status)))
     }
     logx.Info("====打印sql===")
     logx.Info(sql)
