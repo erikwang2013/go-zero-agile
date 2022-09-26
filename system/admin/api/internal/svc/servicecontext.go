@@ -3,14 +3,16 @@ package svc
 import (
 	"erik-agile/common/xgorm"
 	"erik-agile/system/admin/api/internal/config"
+	"erik-agile/system/admin/api/internal/middleware"
 
+	"github.com/zeromicro/go-zero/rest"
 	"gorm.io/gorm"
 )
 
 type ServiceContext struct {
-    Config config.Config
-    Gorm   *gorm.DB
-    // AdminMiddle         rest.Middleware
+    Config      config.Config
+    AdminMiddle rest.Middleware
+    Gorm        *gorm.DB
     // AdminModel          admin.AdminModel
     // AdminLoginLogModel  adminLoginLog.AdminLoginLogModel
     // AdminRoleGroupModel adminRoleGroup.AdminRoleGroupModel
@@ -31,7 +33,8 @@ type ServiceContext struct {
 // }
 func NewServiceContext(c config.Config) *ServiceContext {
     return &ServiceContext{
-        Config: c,
-        Gorm:   xgorm.NewGorm(c.Mysql.DataSource,c.Mysql.TablePrefix),
+        Config:      c,
+        AdminMiddle: middleware.NewAdminMiddleware().Handle,
+        Gorm:        xgorm.NewGorm(c.Mysql.DataSource, c.Mysql.TablePrefix),
     }
 }

@@ -1,4 +1,4 @@
-CREATE TABLE `permission` (
+CREATE TABLE `ag_permission` (
   `id` int NOT NULL AUTO_INCREMENT,
   `parent_id` int NOT NULL DEFAULT '0' COMMENT '父级',
   `name` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '权限名称',

@@ -1,4 +1,4 @@
-CREATE TABLE `admin` (
+CREATE TABLE `ag_admin` (
   `id` int NOT NULL AUTO_INCREMENT,
   `parent_id` int NOT NULL DEFAULT '0' COMMENT '父级id',
   `head_img` varchar(200) COLLATE utf8mb4_general_ci DEFAULT '' COMMENT '用户头像',

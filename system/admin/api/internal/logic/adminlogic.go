@@ -8,7 +8,7 @@ import (
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
-	AdminModel "erik-agile/system/admin/model/admin"
+	"erik-agile/system/admin/model"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -75,7 +75,7 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
     if err != nil {
         return nil, err
     }
-    getData := &AdminModel.Admin{
+    getData := &model.Admin{
         Id:       req.Id,
         ParentId: req.ParentId,
         Name:     req.Name,
@@ -124,12 +124,13 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         transStr := varError.Translate(trans)
         return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.Name)
-    if err == nil && adminInfo != nil {
+    var adminInfo *model.Admin
+    resultAdmin := l.svcCtx.Gorm.Where(&model.Admin{Name: req.Name}).Find(&adminInfo)
+    if resultAdmin.Error == nil && adminInfo != nil {
         return nil, errors.New("用户名已存在")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
-    setData := &AdminModel.Admin{
+    setData := &model.Admin{
         HeadImg:       req.HeadImg,
         Name:          req.Name,
         NickName:      req.NickName,
@@ -152,13 +153,12 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         return nil, errors.New("密码生成失败")
     }
     setData.Password = byct
-    insert, err := l.svcCtx.AdminModel.Insert(l.ctx, setData)
-    if err != nil {
+    resultAdd := l.svcCtx.Gorm.Create(&setData)
+    if resultAdd.Error != nil {
         return nil, errors.New("新增用户失败")
     }
-    getId, _ := insert.LastInsertId()
+    //getId:=resultAdd.NowFunc().IsDST()
     return &types.AdminInfoReply{
-        Id:       int(getId),
         ParentId: setData.ParentId,
         HeadImg:  setData.HeadImg,
         Name:     setData.Name,
@@ -166,7 +166,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         Password: password,
         Gender: types.StatusValueName{
             Key: setData.Gender,
-            Val: AdminModel.AdminGenderName[setData.Gender],
+            Val: model.AdminGenderName[setData.Gender],
         },
         Phone: setData.Phone,
         Email: setData.Email,

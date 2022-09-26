@@ -10,7 +10,7 @@ import (
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
-	adminLoginLog "erik-agile/system/admin/model/admin/login/log"
+	"erik-agile/system/admin/model"
 
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
@@ -60,10 +60,13 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         transStr := varError.Translate(trans)
         return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
-    if err != nil {
+    var adminInfo model.Admin
+    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName}).First(&adminInfo)
+    //adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
+    if resultAdmin.Error != nil {
         return nil, errors.New("登录校验异常")
     }
+   
     logx.Info("===获取密码===")
     logx.Info(adminInfo.Password)
     logx.Info(req.Password)
@@ -75,15 +78,16 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         return nil, errors.New("令牌生成失败")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
-    adminLog := &adminLoginLog.AdminLoginLog{
+    adminLog := &model.AdminLoginLog{
         Id:          dataFormat.NextSonyFlakeIdInt64(),
         AdminId:     adminInfo.Id,
         LoginIp:     dataFormat.GetIP(),
         AccessToken: token,
         LoginTime:   getTime,
     }
-    _, err = l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
-    if err != nil {
+    resultLog := l.svcCtx.Gorm.Create(adminLog)
+    //_, err = l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
+    if resultLog.Error != nil {
         return nil, errors.New("登录记录失败")
     }
     return &types.LoginReply{

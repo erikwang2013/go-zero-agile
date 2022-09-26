@@ -1,4 +1,4 @@
-CREATE TABLE `admin_login_log` (
+CREATE TABLE `ag_admin_login_log` (
   `id` bigint unsigned NOT NULL,
   `admin_id` int NOT NULL,
   `access_token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
