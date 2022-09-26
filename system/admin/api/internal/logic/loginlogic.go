@@ -51,6 +51,8 @@ func validateRegister(v *validator.Validate) {
     return
 }
 
+
+
 func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err error) {
     validate := validator.New()
     validateRegister(validate)
