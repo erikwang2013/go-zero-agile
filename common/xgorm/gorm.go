@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-func NewGorm(dsn string) *gorm.DB {
+func NewGorm(dsn, prefix string) *gorm.DB {
     db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
         NamingStrategy: schema.NamingStrategy{
-            TablePrefix:   "",
+            TablePrefix:   prefix,
             SingularTable: true,
         },
     })

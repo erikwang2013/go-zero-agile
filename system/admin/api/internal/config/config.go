@@ -9,7 +9,8 @@ import (
 type Config struct {
     rest.RestConf
     Mysql struct {
-        DataSource string
+        DataSource  string
+        TablePrefix string
     }
     CacheRedis cache.CacheConf
     Auth       struct {

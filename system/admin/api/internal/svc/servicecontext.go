@@ -32,6 +32,6 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
     return &ServiceContext{
         Config: c,
-        Gorm:   xgorm.NewGorm(c.Mysql.DataSource),
+        Gorm:   xgorm.NewGorm(c.Mysql.DataSource,c.Mysql.TablePrefix),
     }
 }
