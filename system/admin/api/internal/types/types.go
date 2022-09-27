@@ -37,7 +37,7 @@ type AdminPutReq struct {
     Email    string `json:"email,optional" validate:"email"` // 邮箱
     Status   int8   `json:"status,optional" validate:"number,min=0,max=1"`
     Gender   int8   `json:"gender,optional" validate:"number,min=0,max=2"`
-    Info     string `json:"info" validate:"alphanum,max=100"` // 备注
+    Info     string `json:"info,optional" validate:"alphanum,max=100"` // 备注
 }
 
 type AdminDeleteReq struct {

@@ -203,12 +203,12 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     }, nil
 }
 
-func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp string, err error) {
+func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     var ids []string
     if len(req.Id) <= 0 {
-        return "", errors.New("删除id必须")
+        return nil, errors.New("删除id必须")
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
@@ -216,16 +216,69 @@ func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp string, err error) 
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
-            return "", errors.New(dataFormat.RemoveTopStruct(transStr))
+            return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
     result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
     if result.Error != nil {
-        return "", errors.New("删除用户失败")
+        return nil, errors.New("删除用户失败")
     }
-    return req.Id, nil
+    return &req.Id, nil
 }
 
 func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, err error) {
-    return
+    validate := validator.New()
+    validateRegister(validate)
+    err = validate.Struct(req)
+    if err != nil {
+        varError := err.(validator.ValidationErrors)
+        transStr := varError.Translate(trans)
+        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+    }
+    var up model.Admin
+    i := 0
+    if req.ParentId > 0 {
+        up.ParentId = req.ParentId
+        i += 1
+    }
+    if len(req.NickName) > 0 {
+        up.NickName = req.NickName
+        i += 1
+    }
+    if len(req.Name) > 0 {
+        up.Name = req.Name
+        i += 1
+    }
+    if len(req.Password) > 0 {
+        up.Password = req.Password
+        i += 1
+    }
+    if len(req.Phone) > 0 {
+        up.Phone = req.Phone
+        i += 1
+    }
+    if len(req.Email) > 0 {
+        up.Email = req.Email
+        i += 1
+    }
+    if req.Status > 0 {
+        up.Status = req.Status
+        i += 1
+    }
+    if req.Gender > 0 {
+        up.Gender = req.Gender
+        i += 1
+    }
+    if len(req.Info) > 0 {
+        up.Info = req.Info
+        i += 1
+    }
+    if i <= 0 {
+        return nil, errors.New("至少更新一个参数")
+    }
+    result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
+    if result.Error != nil {
+        return nil, errors.New("更新用户失败")
+    }
+    return &types.AdminInfoReply{}, nil
 }
