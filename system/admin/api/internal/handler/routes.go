@@ -44,6 +44,11 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
                     Path:    "/system/admin",
                     Handler: adminHandler(serverCtx),
                 },
+                 {
+                    Method:  http.MethodGet,
+                    Path:    "/system/admin/info",
+                    Handler: adminInfoHandler(serverCtx),
+                },
             }...,
         ),
         rest.WithJwt(serverCtx.Config.Auth.AccessSecret),

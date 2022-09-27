@@ -76,3 +76,13 @@ type AdminAddReq struct {
     Status   int8   `json:"status" validate:"number,min=0,max=1"`             // 状态 0=开启 1=关闭
     Info     string `json:"info" validate:"max=100"`           // 备注
 }
+
+type AdminInfoAllReq struct {
+    Id int `json:"id" validate:"required,gte=0"`
+}
+
+type PermissionAdminInfoReply struct {
+    AdminInfoReply
+    Role []string
+    Permission []string
+}

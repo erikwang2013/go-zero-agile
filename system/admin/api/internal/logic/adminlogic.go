@@ -34,7 +34,7 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
     validateRegister(validate)
     var err error
     if req.Id > 0 {
-        err = validate.Var(req.Id, "number,max=18,min=1")
+        err = validate.Var(req.Id, "gte=0")
     }
     if req.ParentId >= 0 {
         err = validate.Var(req.ParentId, "number,max=18,min=0,isdefault=-1")
@@ -298,4 +298,20 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     }
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
+}
+
+//获取个人信息
+func (l *AdminLogic) AdminInfo(req *types.AdminInfoAllReq) (code int, resp *string, err error) {
+    validate := validator.New()
+    validateRegister(validate)
+    if req.Id > 0 {
+        err = validate.Var(req.Id, "required,gte=0")
+        if err != nil {
+            varError := err.(validator.ValidationErrors)
+            transStr := varError.Translate(trans)
+            return 400001, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        }
+    }
+
+    return 200000, nil, nil
 }
