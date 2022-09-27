@@ -20,11 +20,11 @@ func adminHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx)
-        resp, err := l.Admin(&req)
+        code, resp, err := l.Admin(&req)
         if err != nil {
-            httpx.Error(w, errorx.NewDefaultError(err.Error()))
+            httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {
-            httpx.OkJson(w, successx.NewDefaultSuccess(resp))
+            httpx.OkJson(w, successx.NewDefaultSuccess(code,resp))
         }
     }
 }
@@ -37,45 +37,45 @@ func createHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx)
-        resp, err := l.Create(&req)
+        code, resp, err := l.Create(&req)
         if err != nil {
-            httpx.Error(w, errorx.NewDefaultError(err.Error()))
+            httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {
-            httpx.OkJson(w, successx.NewDefaultSuccess(resp))
+            httpx.OkJson(w, successx.NewDefaultSuccess(code,resp))
         }
     }
 }
 
 func deleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoReq
+        var req types.AdminDeleteReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx)
-        resp, err := l.Delete(&req)
+        code, resp, err := l.Delete(&req)
         if err != nil {
-            httpx.Error(w, errorx.NewDefaultError(err.Error()))
+            httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {
-            httpx.OkJson(w, successx.NewDefaultSuccess(resp))
+            httpx.OkJson(w, successx.NewDefaultSuccess(code,resp))
         }
     }
 }
 
 func putHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoReq
+        var req types.AdminPutReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx)
-        resp, err := l.Put(&req)
+        code, resp, err := l.Put(&req)
         if err != nil {
-            httpx.Error(w, errorx.NewDefaultError(err.Error()))
+            httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {
-            httpx.OkJson(w, successx.NewDefaultSuccess(resp))
+            httpx.OkJson(w, successx.NewDefaultSuccess(code,resp))
         }
     }
 }

@@ -52,10 +52,10 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
         err = validate.Var(req.Email, "email")
     }
     if req.Status >= 0 {
-        err = validate.Var(req.Email, "number,min=0,max=1,isdefault=-1")
+        err = validate.Var(req.Status, "number,min=0,max=1,isdefault=-1")
     }
     if req.Gender >= 0 {
-        err = validate.Var(req.Email, "number,min=0,max=2,isdefault=-1")
+        err = validate.Var(req.Gender, "number,min=0,max=2,isdefault=-1")
     }
     if req.Page >= 1 {
         err = validate.Var(req.Page, "number,max=11,min=1")
@@ -71,10 +71,10 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
     return nil
 }
 
-func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoReply, err error) {
+func (l *AdminLogic) Admin(req *types.AdminInfoReq) (code int, resp []*types.AdminInfoReply, err error) {
     err = AdminCheckParam(req)
     if err != nil {
-        return nil, err
+        return 400000, nil, err
     }
     var all []*model.Admin
     var getData model.Admin
@@ -109,7 +109,7 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
-        return nil, errors.New("查询用户列表失败")
+        return 500000, nil, errors.New("查询用户列表失败")
     }
     var getAll []*types.AdminInfoReply
     for _, v := range all {
@@ -132,22 +132,25 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
         getAll = append(getAll, r)
     }
 
-    return getAll, nil
+    return 200000, getAll, nil
 }
 
-func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply, err error) {
+func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.AdminInfoReply, err error) {
     validate := validator.New()
     validateRegister(validate)
     err = validate.Struct(req)
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Where(&model.Admin{Name: req.Name}).Find(&adminInfo)
-    if resultAdmin.Error == nil && adminInfo != nil {
-        return nil, errors.New("用户名已存在")
+    resultAdmin := l.svcCtx.Gorm.Debug().Model(&model.Admin{}).Where(&model.Admin{Name: req.Name}).First(&adminInfo)
+    if resultAdmin.Error == nil {
+        return 500000, nil, errors.New("用户名校验异常")
+    }
+    if adminInfo.Id >0 {
+        return 400000, nil, errors.New("用户名已存在")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
     setData := &model.Admin{
@@ -170,14 +173,14 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     password := dataFormat.RandStr(8)
     byct, err := dataFormat.HashAndSalt(password)
     if err != nil {
-        return nil, errors.New("密码生成失败")
+        return 500000, nil, errors.New("密码生成失败")
     }
     setData.Password = byct
     resultAdd := l.svcCtx.Gorm.Create(&setData)
     if resultAdd.Error != nil {
-        return nil, errors.New("新增用户失败")
+        return 500000, nil, errors.New("新增用户失败")
     }
-    return &types.AdminInfoReply{
+    return 200000, &types.AdminInfoReply{
         ParentId: setData.ParentId,
         HeadImg:  setData.HeadImg,
         Name:     setData.Name,
@@ -203,12 +206,12 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     }, nil
 }
 
-func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp *string, err error) {
+func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (code int, resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     var ids []string
     if len(req.Id) <= 0 {
-        return nil, errors.New("删除id必须")
+        return 400000, nil, errors.New("删除id必须")
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
@@ -216,24 +219,24 @@ func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp *string, err error)
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
-            return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+            return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
     result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
     if result.Error != nil {
-        return nil, errors.New("删除用户失败")
+        return 500000, nil, errors.New("删除用户失败")
     }
-    return &req.Id, nil
+    return 200000, &req.Id, nil
 }
 
-func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, err error) {
+func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     err = validate.Struct(req)
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var up model.Admin
     i := 0
@@ -252,7 +255,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, er
     if len(req.Password) > 0 {
         byct, err := dataFormat.HashAndSalt(req.Password)
         if err != nil {
-            return nil, errors.New("密码加密失败")
+            return 500000, nil, errors.New("密码加密失败")
         }
         up.Password = byct
         i += 1
@@ -278,11 +281,12 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, er
         i += 1
     }
     if i <= 0 {
-        return nil, errors.New("至少更新一个参数")
+        return 400000, nil, errors.New("至少更新一个参数")
     }
     result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
-        return nil, errors.New("更新用户失败")
+        return 500000, nil, errors.New("更新用户失败")
     }
-    return &types.AdminInfoReply{}, nil
+    upId := dataFormat.IntToString(req.Id)
+    return 200000, &upId, nil
 }

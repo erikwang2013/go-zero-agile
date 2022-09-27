@@ -7,8 +7,10 @@ import (
 	"net"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strconv"
 	"time"
+	"unicode"
 
 	"github.com/sony/sonyflake"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -237,4 +239,13 @@ func ValidatePasswords(hashedPwd, plainPwd string) bool {
         return false
     }
     return true
+}
+
+func IsChineseChar(str string) bool {
+ for _, r := range str {
+ if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[u3002uff1buff0cuff1au201cu201duff08uff09u3001uff1fu300au300b]").MatchString(string(r))) {
+  return true
+ }
+ }
+ return false
 }

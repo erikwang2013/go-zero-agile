@@ -12,4 +12,10 @@ CacheRedis:
 Auth:
   AccessSecret: 3nYd69iRFTzfvl4AIDtcroVsP1UOaL7euyXhxj2mqESMZH8WQBCwN0K5JkbpGg3Z
   AccessExpire: 604800
-ServiceName: admin-log
+
+LogConf:
+  ServiceName: admin-log
+  Level: error
+  Encoding: plain
+  TimeFormat: Y-m-d H:i:s
+  KeepDays: 15

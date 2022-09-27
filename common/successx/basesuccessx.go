@@ -19,6 +19,6 @@ func NewCodeSuccess(code int, msg string, data interface{}) *CodeSuccess {
     return &CodeSuccess{Code: code, Msg: msg, Data: data}
 }
 
-func NewDefaultSuccess(data interface{}) *CodeSuccess {
-    return NewCodeSuccess(defaultCode, defaultMsg, data)
+func NewDefaultSuccess(code int, data interface{}) *CodeSuccess {
+    return NewCodeSuccess(code, defaultMsg, data)
 }

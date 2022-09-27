@@ -53,27 +53,27 @@ func validateRegister(v *validator.Validate) {
 
 
 
-func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err error) {
+func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginReply, err error) {
     validate := validator.New()
     validateRegister(validate)
     err = validate.Struct(req)
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000,nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
     resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
     if resultAdmin.Error != nil {
-        return nil, errors.New("登录校验异常")
+        return 500000,nil, errors.New("登录校验异常")
     }
    
     if dataFormat.ValidatePasswords(adminInfo.Password, req.Password) == false {
-        return nil, errors.New("用户名或密码错误")
+        return 400000,nil, errors.New("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
     if err != nil {
-        return nil, errors.New("令牌生成失败")
+        return 500000,nil, errors.New("令牌生成失败")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
     adminLog := &model.AdminLoginLog{
@@ -85,9 +85,9 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
     }
     resultLog := l.svcCtx.Gorm.Create(adminLog)
     if resultLog.Error != nil {
-        return nil, errors.New("登录记录失败")
+        return 500000,nil, errors.New("登录记录失败")
     }
-    return &types.LoginReply{
+    return 200000,&types.LoginReply{
         Id:           adminInfo.Id,
         Name:         adminInfo.Name,
         AccessToken:  token,
