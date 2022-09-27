@@ -250,7 +250,11 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, er
         i += 1
     }
     if len(req.Password) > 0 {
-        up.Password = req.Password
+        byct, err := dataFormat.HashAndSalt(req.Password)
+        if err != nil {
+            return nil, errors.New("密码加密失败")
+        }
+        up.Password = byct
         i += 1
     }
     if len(req.Phone) > 0 {
