@@ -45,6 +45,7 @@ func permissionDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
         }
     }
 }
+
 func permissionPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminInfoReq
@@ -61,6 +62,7 @@ func permissionPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
         }
     }
 }
+
 func permissionHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminInfoReq
