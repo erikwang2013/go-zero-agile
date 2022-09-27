@@ -14,6 +14,7 @@ Auth:
   AccessExpire: 604800
 
 LogConf:
+  Path: ./tmp/admin
   ServiceName: admin-log
   Level: error
   Encoding: plain
