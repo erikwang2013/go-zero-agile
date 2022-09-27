@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	dataFormat "erik-agile/common/data-format"
@@ -103,7 +104,7 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
         getData.Gender = req.Gender
     }
     var total int64
-    db:=l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
+    db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
@@ -202,10 +203,29 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     }, nil
 }
 
-func (l *AdminLogic) Delete(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
-    return
+func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (resp string, err error) {
+    validate := validator.New()
+    validateRegister(validate)
+    var ids []string
+    if len(req.Id) <= 0 {
+        return "", errors.New("删除id必须")
+    }
+    ids = strings.Split(req.Id, ",")
+    for _, v := range ids {
+        err = validate.Var(v, "alphanum,max=100,min=1")
+        if err != nil {
+            varError := err.(validator.ValidationErrors)
+            transStr := varError.Translate(trans)
+            return "", errors.New(dataFormat.RemoveTopStruct(transStr))
+        }
+    }
+    result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
+    if result.Error != nil {
+        return "", errors.New("删除用户失败")
+    }
+    return req.Id, nil
 }
 
-func (l *AdminLogic) Put(req *types.AdminInfoReq) (resp *types.AdminInfoReply, err error) {
+func (l *AdminLogic) Put(req *types.AdminPutReq) (resp *types.AdminInfoReply, err error) {
     return
 }

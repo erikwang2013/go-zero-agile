@@ -27,12 +27,28 @@ type AdminInfoReq struct {
     Limit    int    `json:"limit" validate:"number,max=11,min=1"`
 }
 
+type AdminPutReq struct {
+    Id       int    `json:"id" validate:"number,max=18,min=1"`
+    ParentId int    `json:"parent_id,optional" validate:"number,max=18,min=0"`
+    NickName string `json:"nick_name,optional" validate:"alphanum,max=30,min=4"`
+    Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
+    Password string `json:"password,optional" validate:"alphanum,max=30,min=6"`
+    Phone    string `json:"phone,optional" validate:"e164"`  // 手机
+    Email    string `json:"email,optional" validate:"email"` // 邮箱
+    Status   int8   `json:"status,optional" validate:"number,min=0,max=1"`
+    Gender   int8   `json:"gender,optional" validate:"number,min=0,max=2"`
+    Info     string `json:"info" validate:"alphanum,max=100"` // 备注
+}
+
+type AdminDeleteReq struct {
+    Id string `json:"id,optional"`
+}
 type AdminInfoReply struct {
     Id            int             `json:"id"`
     ParentId      int             `json:"parent_id"` // 父级id
     HeadImg       string          `json:"head_img"`  // 用户头像
     Name          string          `json:"name"`
-    NickName      string          `json:"nick_name"` // 昵称
+    NickName      string          `json:"nick_name"`      // 昵称
     Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
     Phone         string          `json:"phone"`          // 手机
     Email         string          `json:"email"`          // 邮箱

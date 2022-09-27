@@ -63,15 +63,11 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         return nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName}).First(&adminInfo)
-    //adminInfo, err := l.svcCtx.AdminModel.FindOneName(l.ctx, req.UserName)
+    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
     if resultAdmin.Error != nil {
         return nil, errors.New("登录校验异常")
     }
    
-    logx.Info("===获取密码===")
-    logx.Info(adminInfo.Password)
-    logx.Info(req.Password)
     if dataFormat.ValidatePasswords(adminInfo.Password, req.Password) == false {
         return nil, errors.New("用户名或密码错误")
     }
@@ -88,7 +84,6 @@ func (l *LoginLogic) Login(req *types.LoginReq) (reqly *types.LoginReply, err er
         LoginTime:   getTime,
     }
     resultLog := l.svcCtx.Gorm.Create(adminLog)
-    //_, err = l.svcCtx.AdminLoginLogModel.Insert(l.ctx, adminLog)
     if resultLog.Error != nil {
         return nil, errors.New("登录记录失败")
     }
