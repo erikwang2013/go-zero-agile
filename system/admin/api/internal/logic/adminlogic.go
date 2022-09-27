@@ -103,7 +103,7 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
         getData.Gender = req.Gender
     }
     var total int64
-    db:=l.svcCtx.Gorm.Debug().Model(&model.Admin{}).Where(&getData)
+    db:=l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
@@ -176,7 +176,6 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
     if resultAdd.Error != nil {
         return nil, errors.New("新增用户失败")
     }
-    //getId:=resultAdd.NowFunc().IsDST()
     return &types.AdminInfoReply{
         ParentId: setData.ParentId,
         HeadImg:  setData.HeadImg,
