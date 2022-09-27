@@ -27,17 +27,17 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/admin",
-                    Handler: createHandler(serverCtx),
+                    Handler: adminCreateHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/admin",
-                    Handler: deleteHandler(serverCtx),
+                    Handler: adminDeleteHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/admin",
-                    Handler: putHandler(serverCtx),
+                    Handler: adminPutHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodGet,
@@ -48,6 +48,26 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
                     Method:  http.MethodGet,
                     Path:    "/system/admin/info",
                     Handler: adminInfoHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodPost,
+                    Path:    "/system/permission",
+                    Handler: permissionCreateHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodDelete,
+                    Path:    "/system/permission",
+                    Handler: permissionDeleteHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodPut,
+                    Path:    "/system/permission",
+                    Handler: permissionPutHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodGet,
+                    Path:    "/system/permission",
+                    Handler: permissionHandler(serverCtx),
                 },
             }...,
         ),

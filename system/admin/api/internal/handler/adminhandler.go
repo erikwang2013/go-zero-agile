@@ -46,7 +46,7 @@ func adminInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func createHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func adminCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminAddReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -63,7 +63,7 @@ func createHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func deleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func adminDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminDeleteReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -80,7 +80,7 @@ func deleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func putHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func adminPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminPutReq
         if err := httpx.Parse(r, &req); err != nil {
