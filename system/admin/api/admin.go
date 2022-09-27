@@ -11,6 +11,7 @@ import (
 	"erik-agile/system/admin/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -23,6 +24,7 @@ func main() {
 
     var c config.Config
     conf.MustLoad(*configFile, &c)
+    logx.MustSetup(c.LogConf)
     server := rest.MustNewServer(c.RestConf)
     defer server.Stop()
 
