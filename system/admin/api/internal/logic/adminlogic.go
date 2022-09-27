@@ -45,8 +45,9 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
     if len(req.Name) > 0 {
         err = validate.Var(req.Name, "alphanum,max=30,min=4")
     }
-    if len(req.Phone) > 0 {
-        err = validate.Var(req.Phone, "e164")
+    checkPhone := dataFormat.CheckMobile(req.Phone)
+    if len(req.Phone) > 0 && false == checkPhone {
+        return errors.New("手机号格式错误")
     }
     if len(req.Email) > 0 {
         err = validate.Var(req.Email, "email")
@@ -144,12 +145,16 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
+    checkPhone := dataFormat.CheckMobile(req.Phone)
+    if len(req.Phone) > 0 && false == checkPhone {
+        return 400000, nil, errors.New("手机号格式错误")
+    }
     var adminInfo *model.Admin
     resultAdmin := l.svcCtx.Gorm.Debug().Model(&model.Admin{}).Where(&model.Admin{Name: req.Name}).First(&adminInfo)
     if resultAdmin.Error == nil {
         return 500000, nil, errors.New("用户名校验异常")
     }
-    if adminInfo.Id >0 {
+    if adminInfo.Id > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
@@ -261,6 +266,10 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
         i += 1
     }
     if len(req.Phone) > 0 {
+        checkPhone := dataFormat.CheckMobile(req.Phone)
+        if false == checkPhone {
+            return 400000, nil, errors.New("手机号格式错误")
+        }
         up.Phone = req.Phone
         i += 1
     }

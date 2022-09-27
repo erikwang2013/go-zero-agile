@@ -241,11 +241,29 @@ func ValidatePasswords(hashedPwd, plainPwd string) bool {
     return true
 }
 
+//是否存在中文
 func IsChineseChar(str string) bool {
- for _, r := range str {
- if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[u3002uff1buff0cuff1au201cu201duff08uff09u3001uff1fu300au300b]").MatchString(string(r))) {
-  return true
- }
- }
- return false
+    for _, r := range str {
+        if unicode.Is(unicode.Scripts["Han"], r) || (regexp.MustCompile("[u3002uff1buff0cuff1au201cu201duff08uff09u3001uff1fu300au300b]").MatchString(string(r))) {
+            return true
+        }
+    }
+    return false
+}
+
+//校验手机号
+func CheckMobile(phone string) bool {
+    // 匹配规则
+    // ^1第一位为一
+    // [345789]{1} 后接一位345789 的数字
+    // \\d \d的转义 表示数字 {9} 接9位
+    // $ 结束符
+    regRuler := "^1[345789]{1}\\d{9}$"
+
+    // 正则调用规则
+    reg := regexp.MustCompile(regRuler)
+
+    // 返回 MatchString 是否匹配
+    return reg.MatchString(phone)
+
 }
