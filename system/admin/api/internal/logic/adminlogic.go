@@ -75,19 +75,38 @@ func (l *AdminLogic) Admin(req *types.AdminInfoReq) (resp []*types.AdminInfoRepl
     if err != nil {
         return nil, err
     }
-     var all []*model.Admin
-    // getData := &model.Admin{
-    //     Id:       req.Id,
-    //     ParentId: req.ParentId,
-    //     Name:     req.Name,
-    //     NickName: req.NickName,
-    //     Phone:    req.Phone,
-    //     Email:    req.Email,
-    //     Gender:   req.Gender,
-    //     Status:   req.Status,
-    // }
-    // result:=l.svcCtx.Gorm.Where(getData).Find(&all)
-    result:=l.svcCtx.Gorm.Find(&all)
+    var all []*model.Admin
+    var getData model.Admin
+    getData.IsDelete = int8(0)
+    if req.Id > 0 {
+        getData.Id = req.Id
+    }
+    if req.ParentId >= 0 {
+        getData.ParentId = req.ParentId
+    }
+    if len(req.Name) > 0 {
+        getData.Name = req.Name
+    }
+    if len(req.NickName) > 0 {
+        getData.NickName = req.NickName
+    }
+    if len(req.Phone) > 0 {
+        getData.Phone = req.Phone
+    }
+    if len(req.Email) > 0 {
+        getData.Email = req.Email
+    }
+    if req.Status >= 0 {
+        getData.Status = req.Status
+    }
+    if req.Gender >= 0 {
+        getData.Gender = req.Gender
+    }
+    var total int64
+    db:=l.svcCtx.Gorm.Debug().Model(&model.Admin{}).Where(&getData)
+    db.Count(&total)
+    pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
+    result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
         return nil, errors.New("查询用户列表失败")
     }
@@ -163,7 +182,6 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (resp *types.AdminInfoReply,
         HeadImg:  setData.HeadImg,
         Name:     setData.Name,
         NickName: setData.NickName,
-        Password: password,
         Gender: types.StatusValueName{
             Key: setData.Gender,
             Val: model.AdminGenderName[setData.Gender],

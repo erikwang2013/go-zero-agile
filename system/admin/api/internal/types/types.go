@@ -33,7 +33,6 @@ type AdminInfoReply struct {
     HeadImg       string          `json:"head_img"`  // 用户头像
     Name          string          `json:"name"`
     NickName      string          `json:"nick_name"` // 昵称
-    Password      string          `json:"password,optional"`
     Gender        StatusValueName `json:"gender"`         // 性别 0=女 1=男 2=保密
     Phone         string          `json:"phone"`          // 手机
     Email         string          `json:"email"`          // 邮箱
