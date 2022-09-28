@@ -168,12 +168,82 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     }
     result := l.svcCtx.Gorm.Model(&model.Permission{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
-        return 500000, nil, errors.New("更新用户失败")
+        return 500000, nil, errors.New("更新权限失败")
     }
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
 }
 
-func (l *PermissionLogic) Permission(req *types.AdminInfoReq) (code int, resp []*types.AdminInfoReply, err error) {
+func (l *PermissionLogic) Permission(req *types.PermissionSearchReq) (code int, resp []*types.PermissionAddReply, err error) {
+    validate := validator.New()
+    validateRegister(validate)
+    if req.Id > 0 {
+        err = validate.Var(req.Id, "gte=0")
+    }
+    if req.ParentId >= 0 {
+        err = validate.Var(req.ParentId, "number,max=18,min=0,isdefault=-1")
+    }
+    if len(req.Name) > 0 {
+        err = validate.Var(req.Name, "alphanum,max=30,min=4")
+    }
+    if len(req.Code) > 0 {
+        err = validate.Var(req.Code, "max=50,min=4")
+    }
+    if req.Status >= 0 {
+        err = validate.Var(req.Status, "number,min=0,max=1,isdefault=-1")
+    }
+    if req.Page >= 1 {
+        err = validate.Var(req.Page, "number,lte=10000,gte=1")
+    }
+    if req.Limit >= 1 {
+        err = validate.Var(req.Limit, "number,lte=1000,gte=1")
+    }
+    if err != nil {
+        varError := err.(validator.ValidationErrors)
+        transStr := varError.Translate(trans)
+        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+    }
+    var getData model.Permission
+    getData.IsDelete = int8(0)
+    if req.Id > 0 {
+        getData.Id = req.Id
+    }
+    if req.ParentId >= 0 {
+        getData.ParentId = req.ParentId
+    }
+    if len(req.Name) > 0 {
+        getData.Name = req.Name
+    }
+    if len(req.Code) > 0 {
+        getData.Code = req.Code
+    }
+    if req.Status >= 0 {
+        getData.Status = req.Status
+    }
+    var all []*model.Permission
+    var total int64
+    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
+    db.Count(&total)
+    pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
+    result := db.Limit(pageSetNum).Offset(offset).Find(&all)
+    if result.Error != nil {
+        return 500000, nil, errors.New("查询用户列表失败")
+    }
+    var getAll []*types.PermissionAddReply
+    for _, v := range all {
+        r := &types.PermissionAddReply{
+            Id:         int(v.Id),
+            ParentId:   v.ParentId,
+            ApiUrl:     v.ApiUrl,
+            Method:     v.Method,
+            Name:       v.Name,
+            Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
+            IsDelete:   types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
+            Code:       v.Code,
+            Info:       v.Info,
+            CreateTime: v.CreateTime.Unix(),
+        }
+        getAll = append(getAll, r)
+    }
     return 200000, nil, nil
 }

@@ -116,6 +116,16 @@ type PermissionPutReq struct {
     Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
 
+type PermissionSearchReq struct {
+    Id       int    `json:"id" validate:"required,gt=0"`
+    ParentId int    `json:"parent_id" validate:"gte=0"`            //父级
+    Name     string `json:"name" validate:"required,max=30,min=4"` //权限名称
+    Code     string `json:"code"  validate:"required,max=50,min=4"`
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
+    Page     int    `json:"page" validate:"number,max=11,min=1"`
+    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
+}
+
 //按钮格式
 type PermissionButton struct {
     Name   string
