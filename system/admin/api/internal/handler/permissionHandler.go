@@ -31,7 +31,7 @@ func permissionCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func permissionDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoReq
+        var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
@@ -48,7 +48,7 @@ func permissionDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func permissionPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoReq
+        var req types.PermissionPutReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return

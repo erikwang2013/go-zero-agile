@@ -21,26 +21,26 @@ type AdminInfoReq struct {
     Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
     Phone    string `json:"phone,optional" validate:"number,len=11"` // 手机
     Email    string `json:"email,optional" validate:"email"`         // 邮箱
-    Status   int8   `json:"status,optional" validate:"number,min=0,max=1"`
-    Gender   int8   `json:"gender,optional" validate:"gte=0,lte=2"`
+    Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"`
+    Gender   int8   `json:"gender,optional" validate:"goneof=-1 0 1 2"`
     Page     int    `json:"page" validate:"number,max=11,min=1"`
     Limit    int    `json:"limit" validate:"number,max=11,min=1"`
 }
 
 type AdminPutReq struct {
-    Id       int    `json:"id" validate:"required,gte=0"`
+    Id       int    `json:"id" validate:"required,gt=0"`
     ParentId int    `json:"parent_id,optional" validate:"number,max=18,min=0"`
     NickName string `json:"nick_name,optional" validate:"max=30,min=4"`
     Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
     Password string `json:"password,optional" validate:"alphanum,max=30,min=6"`
     Phone    string `json:"phone,optional" validate:"number,len=11"` // 手机
     Email    string `json:"email,optional" validate:"email"`         // 邮箱
-    Status   int8   `json:"status,optional" validate:"number,min=0,max=1"`
-    Gender   int8   `json:"gender,optional" validate:"gte=0,lte=2"`
+    Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"`
+    Gender   int8   `json:"gender,optional" validate:"oneof=-1 0 1 2"`
     Info     string `json:"info,optional" validate:"max=100"` // 备注
 }
 
-type AdminDeleteReq struct {
+type DeleteIdsReq struct {
     Id string `json:"id,optional"`
 }
 type AdminInfoReply struct {
@@ -71,10 +71,10 @@ type AdminAddReq struct {
     Name     string `json:"name" validate:"required,alphanum,max=30,min=4"`
     Password string `json:"password" validate:"required,alphanum,max=30,min=6"`
     NickName string `json:"nick_name" validate:"max=30,min=4"`       // 昵称
-    Gender   int8   `json:"gender" validate:"gte=0,lte=2"`           // 性别 0=女 1=男 2=保密
+    Gender   int8   `json:"gender" validate:"oneof=-1 0 1 2"`        // 性别 0=女 1=男 2=保密
     Phone    string `json:"phone" validate:"required,number,len=11"` // 手机
     Email    string `json:"email" validate:"required,email"`         // 邮箱
-    Status   int8   `json:"status" validate:"number,min=0,max=1"`    // 状态 0=开启 1=关闭
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"`   // 状态 0=开启 1=关闭
     Info     string `json:"info" validate:"max=100"`                 // 备注
 }
 
@@ -86,10 +86,10 @@ type PermissionAddReq struct {
     ParentId int    `json:"parent_id" validate:"gte=0"`                //父级
     Name     string `json:"name" validate:"required,max=30,min=4"`     //权限名称
     ApiUrl   string `json:"api_url" validate:"required,max=200,min=4"` //api地址
-    Method   string `json:"method" validate:"required,max=30,min=3"`
+    Method   string `json:"method" validate:"required,oneof=get post put delete,max=30,min=3"`
     Code     string `json:"code"  validate:"required,max=50,min=4"`
     Info     string `json:"info" validate:"max=100"`
-    Status   int8   `json:"status" validate:"number,min=0,max=1"` //状态 0=开启 1=关闭
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
 
 type PermissionAddReply struct {
@@ -105,18 +105,36 @@ type PermissionAddReply struct {
     CreateTime int64           `json:"create_time"`
 }
 
-type PermissionButton struct {
-    Post   bool `json:"post" validate:"boolean"`
-    Delete bool `json:"delete" validate:"boolean"`
-    Put    bool `json:"put" validate:"boolean"`
-    Info   bool `json:"info" validate:"boolean"` //查看详情按钮
-}
-type PermissionData struct {
-    Phone bool `json:"phone" validate:"boolean"`
+type PermissionPutReq struct {
+    Id       int    `json:"id" validate:"required,gt=0"`
+    ParentId int    `json:"parent_id" validate:"gte=0"`                //父级
+    Name     string `json:"name" validate:"required,max=30,min=4"`     //权限名称
+    ApiUrl   string `json:"api_url" validate:"required,max=200,min=4"` //api地址
+    Method   string `json:"method" validate:"required,oneof=get post put delete,max=30,min=3"`
+    Code     string `json:"code"  validate:"required,max=50,min=4"`
+    Info     string `json:"info" validate:"max=100"`
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
 
-type PermissionAdminInfoReply struct {
-    AdminInfoReply
-    Role       []string
-    Permission []string
+//按钮格式
+type PermissionButton struct {
+    Name   string
+    Code   string
+    Status bool
+}
+
+//设定按钮
+func GetPermissionButton() (req []*PermissionButton) {
+    return []*PermissionButton{
+        {
+            Name:   "导入",
+            Code:   "import",
+            Status: true,
+        },
+        {
+            Name:   "导出",
+            Code:   "export",
+            Status: true,
+        },
+    }
 }

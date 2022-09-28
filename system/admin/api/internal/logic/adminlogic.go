@@ -150,12 +150,17 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 400000, nil, errors.New("手机号格式错误")
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Debug().Model(&model.Admin{}).Where(&model.Admin{Name: req.Name}).First(&adminInfo)
-    if resultAdmin.Error == nil {
-        return 500000, nil, errors.New("用户名校验异常")
-    }
-    if adminInfo.Id > 0 {
+    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Name: req.Name}).First(&adminInfo)
+    if resultAdmin.RowsAffected > 0 {
         return 400000, nil, errors.New("用户名已存在")
+    }
+    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Phone: req.Phone}).First(&adminInfo)
+    if resultFindPhone.RowsAffected > 0 {
+        return 400000, nil, errors.New("手机号已存在")
+    }
+    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Email: req.Email}).First(&adminInfo)
+    if resultFindEmail.RowsAffected > 0 {
+        return 400000, nil, errors.New("邮箱已存在")
     }
     getTime := date.GetDefaultTimeFormat()
     setData := model.Admin{
@@ -215,7 +220,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
     }, nil
 }
 
-func (l *AdminLogic) Delete(req *types.AdminDeleteReq) (code int, resp *string, err error) {
+func (l *AdminLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     var ids []string
@@ -295,6 +300,25 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     }
     if i <= 0 {
         return 400000, nil, errors.New("至少更新一个参数")
+    }
+    var adminInfo *model.Admin
+    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("id <> ?", req.Id).
+        Where(&model.Admin{Name: req.Name}).First(&adminInfo)
+    if resultAdmin.RowsAffected > 0 {
+        return 400000, nil, errors.New("用户名已存在")
+    }
+    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("id <> ?", req.Id).
+        Where(&model.Admin{Phone: req.Phone}).First(&adminInfo)
+    if resultFindPhone.RowsAffected > 0 {
+        return 400000, nil, errors.New("手机号已存在")
+    }
+    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("id <> ?", req.Id).
+        Where(&model.Admin{Email: req.Email}).First(&adminInfo)
+    if resultFindEmail.RowsAffected > 0 {
+        return 400000, nil, errors.New("邮箱已存在")
     }
     result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {

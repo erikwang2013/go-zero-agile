@@ -194,7 +194,7 @@ func Page(limit, page int, count int64) (int, int) {
 func RemoveTopStruct(fields map[string]string) string {
     rsp := ""
     for _, err := range fields {
-        rsp += err
+        rsp += err+" "
     }
     return rsp
 }
@@ -267,3 +267,5 @@ func CheckMobile(phone string) bool {
     return reg.MatchString(phone)
 
 }
+
+
