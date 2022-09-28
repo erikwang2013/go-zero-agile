@@ -66,23 +66,59 @@ type StatusValueName struct {
 }
 
 type AdminAddReq struct {
-    ParentId int    `json:"parent_id" validate:"gte=0"` // 父级id
-    HeadImg  string `json:"head_img" validate:"url,max=250,min=10"`   // 用户头像
-    Name     string `json:"name" validate:"alphanum,max=30,min=4"`
-    NickName string `json:"nick_name" validate:"max=30,min=4"` // 昵称
-    Gender   int8   `json:"gender" validate:"gte=0,lte=2"`             // 性别 0=女 1=男 2=保密
-    Phone    string `json:"phone" validate:"number,len=11"`             // 手机
-    Email    string `json:"email" validate:"email"`                     // 邮箱
-    Status   int8   `json:"status" validate:"number,min=0,max=1"`             // 状态 0=开启 1=关闭
-    Info     string `json:"info" validate:"max=100"`           // 备注
+    ParentId int    `json:"parent_id" validate:"required,gte=0"`    // 父级id
+    HeadImg  string `json:"head_img" validate:"url,max=250,min=10"` // 用户头像
+    Name     string `json:"name" validate:"required,alphanum,max=30,min=4"`
+    Password string `json:"password" validate:"required,alphanum,max=30,min=6"`
+    NickName string `json:"nick_name" validate:"max=30,min=4"`       // 昵称
+    Gender   int8   `json:"gender" validate:"gte=0,lte=2"`           // 性别 0=女 1=男 2=保密
+    Phone    string `json:"phone" validate:"required,number,len=11"` // 手机
+    Email    string `json:"email" validate:"required,email"`         // 邮箱
+    Status   int8   `json:"status" validate:"number,min=0,max=1"`    // 状态 0=开启 1=关闭
+    Info     string `json:"info" validate:"max=100"`                 // 备注
 }
 
 type AdminInfoAllReq struct {
     Id int `json:"id" validate:"required,gte=0"`
 }
 
+type PermissionAddReq struct {
+    ParentId         int              `json:"parent_id" validate:"gte=0"`                //父级
+    Name             string           `json:"name" validate:"required,max=30,min=4"`     //权限名称
+    ApiUrl           string           `json:"api_url" validate:"required,max=200,min=4"` //api地址
+    Code             string           `json:"code"  validate:"required,max=50,min=4"`
+    PermissionButton PermissionButton `json:"permission_button" validate:"required"` //权限按钮
+    PermissionData   PermissionData   `json:"permission_data" validate:"required"`   //权限数据
+    Info             string           `json:"info" validate:"max=100"`
+    Status           int8             `json:"status" validate:"number,min=0,max=1"` //状态 0=开启 1=关闭
+}
+
+type PermissionAddReply struct {
+    Id               int              `json:"id"`
+    ParentId         int              `json:"parent_id"` //父级
+    Name             string           `json:"name"`      //权限名称
+    ApiUrl           string           `json:"api_url"`   //api地址
+    Code             string           `json:"code"`
+    PermissionButton PermissionButton `json:"permission_button"` //权限按钮
+    PermissionData   PermissionData   `json:"permission_data"`   //权限数据
+    Info             string           `json:"info"`
+    Status           StatusValueName  `json:"status"`    //状态 0=开启 1=关闭
+    IsDelete         StatusValueName  `json:"is_delete"` //是否删 0=否 1=是
+    CreateTime       int64            `json:"create_time"`
+}
+
+type PermissionButton struct {
+    Post   bool `json:"post" validate:"boolean,isdefault=false"`
+    Delete bool `json:"delete" validate:"boolean,isdefault=false"`
+    Put    bool `json:"put" validate:"boolean,isdefault=false"`
+    Info   bool `json:"info" validate:"boolean,isdefault=false"` //查看详情按钮
+}
+type PermissionData struct {
+    Phone bool `json:"phone" validate:"boolean,isdefault=false"`
+}
+
 type PermissionAdminInfoReply struct {
     AdminInfoReply
-    Role []string
+    Role       []string
     Permission []string
 }

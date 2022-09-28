@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 
 	dataFormat "erik-agile/common/data-format"
+	"erik-agile/common/date"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
@@ -157,8 +157,8 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
     if adminInfo.Id > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
-    getTime := time.Unix(time.Now().Unix(), 0)
-    setData := &model.Admin{
+    getTime := date.GetDefaultTimeFormat()
+    setData := model.Admin{
         HeadImg:       req.HeadImg,
         Name:          req.Name,
         NickName:      req.NickName,
@@ -176,6 +176,9 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         setData.ParentId = req.ParentId
     }
     password := dataFormat.RandStr(8)
+    if len(req.Password) > 0 {
+        password = req.Password
+    }
     byct, err := dataFormat.HashAndSalt(password)
     if err != nil {
         return 500000, nil, errors.New("密码生成失败")
@@ -186,6 +189,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("新增用户失败")
     }
     return 200000, &types.AdminInfoReply{
+        Id:       setData.Id,
         ParentId: setData.ParentId,
         HeadImg:  setData.HeadImg,
         Name:     setData.Name,

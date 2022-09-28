@@ -12,6 +12,10 @@ func GetStampToDate(TimeStamp int64) string {
     return time.Unix(TimeStamp, 0).Format(defaultTime)
 }
 
+func GetDefaultTimeFormat() time.Time {
+    return time.Unix(time.Now().Unix(), 0)
+}
+
 func GetStampToDates(TimeStamp int64) string {
     return time.Unix(TimeStamp, 0).Format("2006-01-02")
 }
