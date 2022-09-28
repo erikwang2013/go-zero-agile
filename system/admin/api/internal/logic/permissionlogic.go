@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	dataFormat "erik-agile/common/data-format"
@@ -38,19 +37,7 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    err = validate.Struct(req.PermissionButton)
-    if err != nil {
-        varError := err.(validator.ValidationErrors)
-        transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
-    }
-    err = validate.Struct(req.PermissionData)
-    if err != nil {
-        varError := err.(validator.ValidationErrors)
-        transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
-    }
-    setData := model.Permission{
+    setData := &model.Permission{
         ParentId:   req.ParentId,
         Name:       req.Name,
         ApiUrl:     req.ApiUrl,
@@ -62,32 +49,17 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     if len(req.Info) > 0 {
         setData.Info = req.Info
     }
-    buttonJson, _ := json.Marshal(req.PermissionButton)
-    setData.PermissionButton = string(buttonJson)
-    pDataJson, _ := json.Marshal(req.PermissionData)
-    setData.PermissionData = string(pDataJson)
     result := l.svcCtx.Gorm.Create(&setData)
     if result.Error != nil {
         return 500000, nil, errors.New("新增权限失败")
     }
-    var getButton types.PermissionButton
-    var getdata types.PermissionData
-    err = json.Unmarshal([]byte(setData.PermissionButton), &getButton)
-    if err != nil {
-        return 500000, nil, errors.New("解析按钮权限错误")
-    }
-    err = json.Unmarshal([]byte(setData.PermissionData), &getdata)
-    if err != nil {
-        return 500000, nil, errors.New("解析数据权限错误")
-    }
     return 200000, &types.PermissionAddReply{
-        Id:               setData.Id,
-        ParentId:         setData.ParentId,
-        Name:             setData.Name,
-        ApiUrl:           setData.ApiUrl,
-        Code:             setData.Code,
-        PermissionButton: getButton,
-        PermissionData:   getdata,
+        Id:       setData.Id,
+        ParentId: setData.ParentId,
+        Name:     setData.Name,
+        ApiUrl:   setData.ApiUrl,
+        Method:   setData.Method,
+        Code:     setData.Code,
         Status: types.StatusValueName{
             Key: setData.Status,
             Val: dataFormat.StatusName[req.Status],
