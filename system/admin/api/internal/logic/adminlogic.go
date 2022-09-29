@@ -123,7 +123,7 @@ func (l *AdminLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, er
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
-        err = validate.Var(v, "alphanum,max=100,min=1")
+        err = validate.Var(v, "alphanum,gte=1")
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
@@ -266,7 +266,7 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
     return nil
 }
 
-func (l *AdminLogic) Admin(req *types.AdminInfoReq) (code int, resp []*types.AdminInfoReply, err error) {
+func (l *AdminLogic) Index(req *types.AdminInfoReq) (code int, resp []*types.AdminInfoReply, err error) {
     err = AdminCheckParam(req)
     if err != nil {
         return 400000, nil, err

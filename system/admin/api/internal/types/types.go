@@ -125,6 +125,43 @@ type PermissionSearchReq struct {
     Page     int    `json:"page" validate:"number,max=11,min=1"`
     Limit    int    `json:"limit" validate:"number,max=11,min=1"`
 }
+type RoleAddReq struct {
+    ParentId int    `json:"parent_id" validate:"required,gte=0"`   //父级
+    Name     string `json:"name" validate:"required,max=30,min=4"` //角色名称
+    Code     string `json:"code"  validate:"required,max=50,min=4"`
+    Info     string `json:"info" validate:"max=100"`
+    Status   int8   `json:"status" validate:"required,number,oneof=-1 0 1"` //状态 0=开启 1=关闭
+}
+
+type RoleAddReply struct {
+    Id         int             `json:"id"`
+    ParentId   int             `json:"parent_id"` //父级
+    Name       string          `json:"name"`      //角色名称
+    Code       string          `json:"code"`
+    Status     StatusValueName `json:"status"`    //状态 0=开启 1=关闭
+    IsDelete   StatusValueName `json:"is_delete"` //是否删 0=否 1=是
+    Info       string          `json:"info"`
+    CreateTime int64           `json:"create_time"`
+}
+
+type RolePutReq struct {
+    Id       int    `json:"id" validate:"required,gt=0"`
+    ParentId int    `json:"parent_id" validate:"gte=0"`   //父级
+    Name     string `json:"name" validate:"max=30,min=4"` //角色名称
+    Code     string `json:"code"  validate:"max=50,min=4"`
+    Info     string `json:"info" validate:"max=100"`
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
+}
+
+type RoleSearchReq struct {
+    Id       int    `json:"id" validate:"gt=0"`
+    ParentId int    `json:"parent_id" validate:"gte=0"`   //父级
+    Name     string `json:"name" validate:"max=30,min=4"` //角色名称
+    Code     string `json:"code"  validate:"max=50,min=4"`
+    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
+    Page     int    `json:"page" validate:"number,max=11,min=1"`
+    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
+}
 
 //按钮格式
 type PermissionButton struct {

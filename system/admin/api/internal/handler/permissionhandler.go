@@ -71,7 +71,7 @@ func permissionHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
             return
         }
         l := logic.NewPermissionLogic(r.Context(), svcCtx)
-        code, resp, err := l.Permission(&req)
+        code, resp, err := l.Index(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {

@@ -2,34 +2,33 @@ package logic
 
 import (
 	"context"
-	"errors"
-	"strings"
-
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
+	"errors"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type PermissionLogic struct {
+type RoleLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
 }
 
-func NewPermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PermissionLogic {
-    return &PermissionLogic{
+func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RoleLogic {
+    return &RoleLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
     }
 }
 
-func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *types.PermissionAddReply, err error) {
+func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAddReply, err error) {
     validate := validator.New()
     validateRegister(validate)
     err = validate.Struct(req)
@@ -38,25 +37,17 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    var findData *model.Permission
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&model.Permission{Code: req.Code}).First(&findData)
+    var findData *model.Role
+    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).Where(&model.Role{Code: req.Code}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
-        return 400000, nil, errors.New("权限编码已存在")
+        return 400000, nil, errors.New("角色编码已存在")
     }
 
-    resultFindUrl := l.svcCtx.Gorm.Model(&model.Permission{}).
-        Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).First(&findData)
-    if resultFindUrl.RowsAffected > 0 {
-        return 400000, nil, errors.New("url和请求类型已存在")
-    }
-
-    setData := &model.Permission{
+    setData := &model.Role{
         ParentId:   req.ParentId,
         Name:       req.Name,
-        ApiUrl:     req.ApiUrl,
         Code:       req.Code,
         Status:     req.Status,
-        Method:     req.Method,
         IsDelete:   0,
         CreateTime: date.GetDefaultTimeFormat(),
     }
@@ -65,14 +56,12 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     }
     result := l.svcCtx.Gorm.Create(&setData)
     if result.Error != nil {
-        return 500000, nil, errors.New("新增权限失败")
+        return 500000, nil, errors.New("新增角色失败")
     }
-    return 200000, &types.PermissionAddReply{
+    return 200000, &types.RoleAddReply{
         Id:       setData.Id,
         ParentId: setData.ParentId,
         Name:     setData.Name,
-        ApiUrl:   setData.ApiUrl,
-        Method:   setData.Method,
         Code:     setData.Code,
         Status: types.StatusValueName{
             Key: setData.Status,
@@ -87,7 +76,7 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     }, nil
 }
 
-func (l *PermissionLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err error) {
+func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     var ids []string
@@ -103,14 +92,14 @@ func (l *PermissionLogic) Delete(req *types.DeleteIdsReq) (code int, resp *strin
             return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-    result := l.svcCtx.Gorm.Model(&model.Permission{}).Where("id IN ?", ids).Updates(model.Permission{IsDelete: 1})
+    result := l.svcCtx.Gorm.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
     if result.Error != nil {
         return 500000, nil, errors.New("删除权限失败")
     }
     return 200000, &req.Id, nil
 }
 
-func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *string, err error) {
+func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err error) {
     validate := validator.New()
     validateRegister(validate)
     err = validate.Struct(req)
@@ -119,7 +108,7 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    var up model.Permission
+    var up model.Role
     i := 0
     if req.ParentId > 0 {
         up.ParentId = req.ParentId
@@ -127,14 +116,6 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     }
     if len(req.Name) > 0 {
         up.Name = req.Name
-        i += 1
-    }
-    if len(req.ApiUrl) > 0 {
-        up.ApiUrl = req.ApiUrl
-        i += 1
-    }
-    if len(req.Method) > 0 {
-        up.Method = req.Method
         i += 1
     }
     if len(req.Code) > 0 {
@@ -152,30 +133,23 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     if i <= 0 {
         return 400000, nil, errors.New("至少更新一个参数")
     }
-    var findData *model.Permission
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).
+    var findData *model.Role
+    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).
         Where("id <> ?", req.Id).
-        Where(&model.Permission{Code: req.Code}).First(&findData)
+        Where(&model.Role{Code: req.Code}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
-        return 400000, nil, errors.New("权限编码已存在")
+        return 400000, nil, errors.New("角色编码已存在")
     }
-
-    resultFindUrl := l.svcCtx.Gorm.Model(&model.Permission{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).First(&findData)
-    if resultFindUrl.RowsAffected > 0 {
-        return 400000, nil, errors.New("url和请求类型已存在")
-    }
-    result := l.svcCtx.Gorm.Model(&model.Permission{}).Where("id = ?", req.Id).Updates(up)
+    result := l.svcCtx.Gorm.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
-        return 500000, nil, errors.New("更新权限失败")
+        return 500000, nil, errors.New("更新角色失败")
     }
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
 }
 
-func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp []*types.PermissionAddReply, err error) {
-    validate := validator.New()
+func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.RoleAddReply, err error) {
+     validate := validator.New()
     validateRegister(validate)
     if req.Id > 0 {
         err = validate.Var(req.Id, "gte=0")
@@ -203,7 +177,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
-    var getData model.Permission
+    var getData model.Role
     getData.IsDelete = int8(0)
     if req.Id > 0 {
         getData.Id = req.Id
@@ -220,22 +194,20 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     if req.Status >= 0 {
         getData.Status = req.Status
     }
-    var all []*model.Permission
+    var all []*model.Role
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
+    db := l.svcCtx.Gorm.Model(&model.Role{}).Where(&getData)
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-    var getAll []*types.PermissionAddReply
+    var getAll []*types.RoleAddReply
     for _, v := range all {
-        r := &types.PermissionAddReply{
+        r := &types.RoleAddReply{
             Id:         int(v.Id),
             ParentId:   v.ParentId,
-            ApiUrl:     v.ApiUrl,
-            Method:     v.Method,
             Name:       v.Name,
             Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
             IsDelete:   types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
