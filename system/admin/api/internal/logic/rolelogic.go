@@ -149,13 +149,13 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
 }
 
 func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.RoleAddReply, err error) {
-     validate := validator.New()
+    validate := validator.New()
     validateRegister(validate)
     if req.Id > 0 {
-        err = validate.Var(req.Id, "gte=0")
+        err = validate.Var(req.Id, "gt=0")
     }
     if req.ParentId >= 0 {
-        err = validate.Var(req.ParentId, "number,max=18,min=0,isdefault=-1")
+        err = validate.Var(req.ParentId, "number,gte=0")
     }
     if len(req.Name) > 0 {
         err = validate.Var(req.Name, "alphanum,max=30,min=4")
@@ -164,7 +164,7 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
         err = validate.Var(req.Code, "max=50,min=4")
     }
     if req.Status >= 0 {
-        err = validate.Var(req.Status, "number,min=0,max=1,isdefault=-1")
+        err = validate.Var(req.Status, "oneof=-1 0 1")
     }
     if req.Page >= 1 {
         err = validate.Var(req.Page, "number,lte=10000,gte=1")
@@ -203,7 +203,7 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-    var getAll []*types.RoleAddReply
+    getAll := []*types.RoleAddReply{}
     for _, v := range all {
         r := &types.RoleAddReply{
             Id:         int(v.Id),

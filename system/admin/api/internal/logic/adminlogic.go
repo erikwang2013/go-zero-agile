@@ -316,7 +316,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-    var getAll []*types.AdminInfoReply
+    getAll :=[]*types.AdminInfoReply{}
      if len(all)<=0{
         return 200000, getAll, nil
     }

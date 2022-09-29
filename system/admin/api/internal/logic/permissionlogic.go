@@ -220,11 +220,11 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     if req.Status >= 0 {
         getData.Status = req.Status
     }
-     if req.Limit<=0{
-        req.Limit=10
+    if req.Limit <= 0 {
+        req.Limit = 10
     }
-    if req.Page<=0{
-        req.Page=1
+    if req.Page <= 0 {
+        req.Page = 1
     }
     var all []*model.Permission
     var total int64
@@ -235,8 +235,8 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-     var getAll []*types.PermissionAddReply
-    if len(all)<=0{
+    getAll := []*types.PermissionAddReply{}
+    if len(all) <= 0 {
         return 200000, getAll, nil
     }
     for _, v := range all {
