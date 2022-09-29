@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -57,7 +58,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 400000, nil, errors.New("邮箱已存在")
     }
     getTime := date.GetDefaultTimeFormat()
-    setData := model.Admin{
+    setData := &model.Admin{
         HeadImg:       req.HeadImg,
         Name:          req.Name,
         NickName:      req.NickName,
@@ -83,8 +84,11 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("密码生成失败")
     }
     setData.Password = byct
+    jsonSet,_:=json.Marshal(setData)
+    logx.Error(string(jsonSet))
     resultAdd := l.svcCtx.Gorm.Create(&setData)
     if resultAdd.Error != nil {
+        logx.Error(resultAdd.Error)
         return 500000, nil, errors.New("新增用户失败")
     }
     return 200000, &types.AdminInfoReply{
@@ -223,7 +227,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
 }
 
 
-func AdminCheckParam(req *types.AdminInfoReq) error {
+func AdminCheckParam(req *types.AdminSearchReq) error {
     validate := validator.New()
     validateRegister(validate)
     var err error
@@ -247,10 +251,10 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
         err = validate.Var(req.Email, "email")
     }
     if req.Status >= 0 {
-        err = validate.Var(req.Status, "number,min=0,max=1,isdefault=-1")
+        err = validate.Var(req.Status, "number,oneof=-1 0 1")
     }
     if req.Gender >= 0 {
-        err = validate.Var(req.Gender, "number,min=0,max=2,isdefault=-1")
+        err = validate.Var(req.Gender, "number,oneof=-1 0 1 2")
     }
     if req.Page >= 1 {
         err = validate.Var(req.Page, "number,lte=10000,gte=1")
@@ -266,7 +270,7 @@ func AdminCheckParam(req *types.AdminInfoReq) error {
     return nil
 }
 
-func (l *AdminLogic) Index(req *types.AdminInfoReq) (code int, resp []*types.AdminInfoReply, err error) {
+func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.AdminInfoReply, err error) {
     err = AdminCheckParam(req)
     if err != nil {
         return 400000, nil, err
@@ -298,6 +302,12 @@ func (l *AdminLogic) Index(req *types.AdminInfoReq) (code int, resp []*types.Adm
     if req.Gender >= 0 {
         getData.Gender = req.Gender
     }
+    if req.Limit<=0{
+        req.Limit=10
+    }
+    if req.Page<=0{
+        req.Page=1
+    }
     var total int64
     db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
     db.Count(&total)
@@ -307,6 +317,9 @@ func (l *AdminLogic) Index(req *types.AdminInfoReq) (code int, resp []*types.Adm
         return 500000, nil, errors.New("查询用户列表失败")
     }
     var getAll []*types.AdminInfoReply
+     if len(all)<=0{
+        return 200000, getAll, nil
+    }
     for _, v := range all {
         r := &types.AdminInfoReply{
             Id:            int(v.Id),

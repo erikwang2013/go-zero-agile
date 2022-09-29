@@ -178,10 +178,10 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     validate := validator.New()
     validateRegister(validate)
     if req.Id > 0 {
-        err = validate.Var(req.Id, "gte=0")
+        err = validate.Var(req.Id, "gt=0")
     }
     if req.ParentId >= 0 {
-        err = validate.Var(req.ParentId, "number,max=18,min=0,isdefault=-1")
+        err = validate.Var(req.ParentId, "number,gte=0")
     }
     if len(req.Name) > 0 {
         err = validate.Var(req.Name, "alphanum,max=30,min=4")
@@ -190,7 +190,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
         err = validate.Var(req.Code, "max=50,min=4")
     }
     if req.Status >= 0 {
-        err = validate.Var(req.Status, "number,min=0,max=1,isdefault=-1")
+        err = validate.Var(req.Status, "oneof=-1 0 1")
     }
     if req.Page >= 1 {
         err = validate.Var(req.Page, "number,lte=10000,gte=1")
@@ -220,16 +220,25 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     if req.Status >= 0 {
         getData.Status = req.Status
     }
+     if req.Limit<=0{
+        req.Limit=10
+    }
+    if req.Page<=0{
+        req.Page=1
+    }
     var all []*model.Permission
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
+    db := l.svcCtx.Gorm.Debug().Model(&model.Permission{}).Where(&getData)
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-    var getAll []*types.PermissionAddReply
+     var getAll []*types.PermissionAddReply
+    if len(all)<=0{
+        return 200000, getAll, nil
+    }
     for _, v := range all {
         r := &types.PermissionAddReply{
             Id:         int(v.Id),

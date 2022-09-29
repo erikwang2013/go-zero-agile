@@ -67,7 +67,7 @@ func adminPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func adminHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoReq
+        var req types.AdminSearchReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return

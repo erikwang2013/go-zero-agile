@@ -223,7 +223,7 @@ var (
 
 // 加密密码
 func HashAndSalt(pwd string) (string, error) {
-    hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.MinCost)
+    hash, err := bcrypt.GenerateFromPassword([]byte(pwd), bcrypt.DefaultCost)
     if err != nil {
         return "", err
     }

@@ -14,17 +14,17 @@ type LoginReply struct {
     RefreshAfter int64  `json:"refresh_after"`
 }
 
-type AdminInfoReq struct {
-    Id       int    `json:"id,optional" validate:"gte=0"`
-    ParentId int    `json:"parent_id,optional" validate:"number,max=18,min=0"`
-    NickName string `json:"nick_name,optional" validate:"max=30,min=4"`
-    Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
-    Phone    string `json:"phone,optional" validate:"number,len=11"` // 手机
-    Email    string `json:"email,optional" validate:"email"`         // 邮箱
-    Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"`
-    Gender   int8   `json:"gender,optional" validate:"goneof=-1 0 1 2"`
-    Page     int    `json:"page" validate:"number,max=11,min=1"`
-    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
+type AdminSearchReq struct {
+    Id       int    `json:"id,optional"`
+    ParentId int    `json:"parent_id,optional"`
+    NickName string `json:"nick_name,optional"`
+    Name     string `json:"name,optional"`
+    Phone    string `json:"phone,optional"` // 手机
+    Email    string `json:"email,optional"`         // 邮箱
+    Status   int8   `json:"status,optional"`
+    Gender   int8   `json:"gender,optional"`
+    Page     int    `json:"page"`
+    Limit    int    `json:"limit"`
 }
 
 type AdminPutReq struct {
@@ -66,7 +66,7 @@ type StatusValueName struct {
 }
 
 type AdminAddReq struct {
-    ParentId int    `json:"parent_id" validate:"required,gte=0"`    // 父级id
+    ParentId int    `json:"parent_id" validate:"gte=0"`    // 父级id
     HeadImg  string `json:"head_img" validate:"url,max=250,min=10"` // 用户头像
     Name     string `json:"name" validate:"required,alphanum,max=30,min=4"`
     Password string `json:"password" validate:"required,alphanum,max=30,min=6"`
@@ -117,13 +117,13 @@ type PermissionPutReq struct {
 }
 
 type PermissionSearchReq struct {
-    Id       int    `json:"id" validate:"required,gt=0"`
-    ParentId int    `json:"parent_id" validate:"gte=0"`            //父级
-    Name     string `json:"name" validate:"required,max=30,min=4"` //权限名称
-    Code     string `json:"code"  validate:"required,max=50,min=4"`
-    Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
-    Page     int    `json:"page" validate:"number,max=11,min=1"`
-    Limit    int    `json:"limit" validate:"number,max=11,min=1"`
+    Id       int    `json:"id,optional"`
+    ParentId int    `json:"parent_id,optional"`            //父级
+    Name     string `json:"name,optional"` //权限名称
+    Code     string `json:"code,optional"`
+    Status   int8   `json:"status,optional"` //状态 0=开启 1=关闭
+    Page     int    `json:"page"`
+    Limit    int    `json:"limit"`
 }
 type RoleAddReq struct {
     ParentId int    `json:"parent_id" validate:"required,gte=0"`   //父级

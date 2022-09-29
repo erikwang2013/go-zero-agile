@@ -10,7 +10,7 @@ type Admin struct {
     Name          string    `gorm:"column:name"`
     NickName      string    `gorm:"column:nick_name"` //昵称
     Gender        int8      `gorm:"column:gender"`    //性别 0=女 1=男 2=保密
-    Password      string    `gorm:"column:password;-"`
+    Password      string    `gorm:"column:password"`
     Phone         string    `gorm:"column:phone"`          //手机
     Email         string    `gorm:"column:email"`          //邮箱
     Status        int8      `gorm:"column:status"`         //状态 0=开启 1=关闭
