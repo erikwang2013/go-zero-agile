@@ -69,6 +69,26 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
                     Path:    "/system/permission",
                     Handler: permissionHandler(serverCtx),
                 },
+                 {
+                    Method:  http.MethodPost,
+                    Path:    "/system/role",
+                    Handler: roleCreateHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodDelete,
+                    Path:    "/system/role",
+                    Handler: roleDeleteHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodPut,
+                    Path:    "/system/role",
+                    Handler: rolePutHandler(serverCtx),
+                },
+                {
+                    Method:  http.MethodGet,
+                    Path:    "/system/role",
+                    Handler: roleHandler(serverCtx),
+                },
             }...,
         ),
         rest.WithJwt(serverCtx.Config.Auth.AccessSecret),
