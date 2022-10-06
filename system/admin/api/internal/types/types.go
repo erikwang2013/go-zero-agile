@@ -30,7 +30,7 @@ type AdminSearchReq struct {
 type AdminPutReq struct {
     Id       int    `json:"id" validate:"required,gt=0"`
     ParentId int    `json:"parent_id,optional" validate:"number,max=18,min=0"`
-    RoleId   int    `json:"role_id" validate:"gte=0"` // 角色id
+    RoleId   int    `json:"role_id" validate:"gt=0"` // 角色id
     NickName string `json:"nick_name,optional" validate:"max=30,min=4"`
     Name     string `json:"name,optional" validate:"alphanum,max=30,min=4"`
     Password string `json:"password,optional" validate:"alphanum,max=30,min=6"`
