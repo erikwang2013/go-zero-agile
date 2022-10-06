@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strings"
 
@@ -30,7 +29,6 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic 
     }
 }
 
-
 func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.AdminInfoReply, err error) {
     validate := validator.New()
     validateRegister(validate)
@@ -45,18 +43,22 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 400000, nil, errors.New("手机号格式错误")
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Name: req.Name}).First(&adminInfo)
+    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("name =? and is_delete=?", req.Name, 0).First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
-    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Phone: req.Phone}).First(&adminInfo)
+    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("phone=? and is_delete=?", req.Phone, 0).First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
         return 400000, nil, errors.New("手机号已存在")
     }
-    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&model.Admin{Email: req.Email}).First(&adminInfo)
+    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).
+        Where("email=? and is_delete=?", req.Email, 0).First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
         return 400000, nil, errors.New("邮箱已存在")
     }
+
     getTime := date.GetDefaultTimeFormat()
     setData := &model.Admin{
         HeadImg:       req.HeadImg,
@@ -84,16 +86,40 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("密码生成失败")
     }
     setData.Password = byct
-    jsonSet,_:=json.Marshal(setData)
-    logx.Error(string(jsonSet))
-    resultAdd := l.svcCtx.Gorm.Create(&setData)
+    tx := l.svcCtx.Gorm.Begin()
+    resultAdd := tx.Create(&setData)
     if resultAdd.Error != nil {
-        logx.Error(resultAdd.Error)
+        tx.Rollback()
         return 500000, nil, errors.New("新增用户失败")
+    }
+    var roleGroupInfo *model.AdminRoleGroup
+    resultFindRole := l.svcCtx.Gorm.Model(&model.AdminRoleGroup{}).
+        Where("role_id=? and admin_id=? and is_delete=?", req.RoleId, setData.Id, 0).
+        First(&roleGroupInfo)
+    if resultFindRole.RowsAffected > 0 {
+        tx.Rollback()
+        return 400000, nil, errors.New("角色已存分配")
+    }
+    roleGroup := &model.AdminRoleGroup{
+        RoleId:   req.RoleId,
+        AdminId:  setData.Id,
+        IsDelete: 0,
+        Status:   0,
+    }
+    resultRoleGroup := tx.Create(&roleGroup)
+    if resultRoleGroup.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("分配用户角色失败")
+    }
+    tx.Commit()
+    getRole, err := getRolePermission(l.svcCtx, setData.Id)
+    if err != nil {
+        getRole = []*types.RoleAddPermissionReply{}
     }
     return 200000, &types.AdminInfoReply{
         Id:       setData.Id,
         ParentId: setData.ParentId,
+        Role:     getRole,
         HeadImg:  setData.HeadImg,
         Name:     setData.Name,
         NickName: setData.NickName,
@@ -156,6 +182,9 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
         up.ParentId = req.ParentId
         i += 1
     }
+    if req.RoleId > 0 {
+        i += 1
+    }
     if len(req.NickName) > 0 {
         up.NickName = req.NickName
         i += 1
@@ -201,31 +230,52 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     }
     var adminInfo *model.Admin
     resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Admin{Name: req.Name}).First(&adminInfo)
+        Where("id <> ? and name=? and is_delete=?", req.Id, req.Name, 0).
+        First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
     resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Admin{Phone: req.Phone}).First(&adminInfo)
+        Where("id <> ? and phone=? and is_delete=?", req.Id, req.Phone, 0).
+        First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
         return 400000, nil, errors.New("手机号已存在")
     }
     resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Admin{Email: req.Email}).First(&adminInfo)
+        Where("id <> ? and email=? and is_delete=?", req.Id, req.Email, 0).
+        First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
         return 400000, nil, errors.New("邮箱已存在")
     }
-    result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
+    tx := l.svcCtx.Gorm.Begin()
+    result := tx.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
+        tx.Rollback()
         return 500000, nil, errors.New("更新用户失败")
     }
+    var roleGroupInfo *model.AdminRoleGroup
+    resultFindRole := l.svcCtx.Gorm.Model(&model.AdminRoleGroup{}).
+        Where("role_id=? and admin_id=? and is_delete=?", req.RoleId, req.Id, 0).
+        First(&roleGroupInfo)
+    if resultFindRole.RowsAffected > 0 {
+        tx.Rollback()
+        return 400000, nil, errors.New("角色已存分配")
+    }
+    roleGroup := &model.AdminRoleGroup{
+        RoleId:   req.RoleId,
+        AdminId:  req.Id,
+        IsDelete: 0,
+        Status:   0,
+    }
+    resultRoleGroup := tx.Create(&roleGroup)
+    if resultRoleGroup.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("分配用户角色失败")
+    }
+    tx.Commit()
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
 }
-
 
 func AdminCheckParam(req *types.AdminSearchReq) error {
     validate := validator.New()
@@ -302,11 +352,11 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     if req.Gender >= 0 {
         getData.Gender = req.Gender
     }
-    if req.Limit<=0{
-        req.Limit=10
+    if req.Limit <= 0 {
+        req.Limit = 10
     }
-    if req.Page<=0{
-        req.Page=1
+    if req.Page <= 0 {
+        req.Page = 1
     }
     var total int64
     db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
@@ -316,14 +366,20 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }
-    getAll :=[]*types.AdminInfoReply{}
-     if len(all)<=0{
+    getAll := []*types.AdminInfoReply{}
+    if len(all) <= 0 {
         return 200000, getAll, nil
     }
+
     for _, v := range all {
+        getRole, err := getRolePermission(l.svcCtx, v.Id)
+        if err != nil {
+            getRole = []*types.RoleAddPermissionReply{}
+        }
         r := &types.AdminInfoReply{
             Id:            int(v.Id),
             ParentId:      v.ParentId,
+            Role:          getRole,
             HeadImg:       v.HeadImg,
             Name:          v.Name,
             NickName:      v.NickName,
