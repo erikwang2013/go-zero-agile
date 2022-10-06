@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stringx"
 )
 
 type RoleLogic struct {
@@ -37,8 +38,9 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
+    CheckCode := dataFormat.GetMd5(stringx.Rand())
     var findData *model.Role
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).Where(&model.Role{Code: req.Code}).First(&findData)
+    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).Where(&model.Role{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
@@ -46,7 +48,7 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     setData := &model.Role{
         ParentId:   req.ParentId,
         Name:       req.Name,
-        Code:       req.Code,
+        Code:       CheckCode,
         Status:     req.Status,
         IsDelete:   0,
         CreateTime: date.GetDefaultTimeFormat(),
@@ -118,10 +120,6 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
         up.Name = req.Name
         i += 1
     }
-    if len(req.Code) > 0 {
-        up.Code = req.Code
-        i += 1
-    }
     if len(req.Info) > 0 {
         up.Info = req.Info
         i += 1
@@ -133,10 +131,12 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     if i <= 0 {
         return 400000, nil, errors.New("至少更新一个参数")
     }
+    CheckCode := dataFormat.GetMd5(stringx.Rand())
+    up.Code = CheckCode
     var findData *model.Role
     resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).
         Where("id <> ?", req.Id).
-        Where(&model.Role{Code: req.Code}).First(&findData)
+        Where(&model.Role{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
@@ -166,12 +166,12 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if req.Status >= 0 {
         err = validate.Var(req.Status, "oneof=-1 0 1")
     }
-    if req.Page >= 1 {
-        err = validate.Var(req.Page, "number,lte=10000,gte=1")
-    }
-    if req.Limit >= 1 {
-        err = validate.Var(req.Limit, "number,lte=1000,gte=1")
-    }
+    // if req.Page >= 1 {
+    //     err = validate.Var(req.Page, "number,lte=10000,gte=1")
+    // }
+    // if req.Limit >= 1 {
+    //     err = validate.Var(req.Limit, "number,lte=1000,gte=1")
+    // }
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
@@ -195,11 +195,12 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
         getData.Status = req.Status
     }
     var all []*model.Role
-    var total int64
+    //var total int64
     db := l.svcCtx.Gorm.Model(&model.Role{}).Where(&getData)
-    db.Count(&total)
-    pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
-    result := db.Limit(pageSetNum).Offset(offset).Find(&all)
+    // db.Count(&total)
+    // pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
+    //result := db.Limit(pageSetNum).Offset(offset).Find(&all)
+    result := db.Find(&all)
     if result.Error != nil {
         return 500000, nil, errors.New("查询用户列表失败")
     }

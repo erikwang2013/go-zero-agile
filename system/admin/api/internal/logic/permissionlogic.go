@@ -38,8 +38,9 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         transStr := varError.Translate(trans)
         return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
+    CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
     var findData *model.Permission
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&model.Permission{Code: req.Code}).First(&findData)
+    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&model.Permission{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("权限编码已存在")
     }
@@ -54,9 +55,9 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         ParentId:   req.ParentId,
         Name:       req.Name,
         ApiUrl:     req.ApiUrl,
-        Code:       req.Code,
         Status:     req.Status,
         Method:     req.Method,
+        Code:       CheckCode,
         IsDelete:   0,
         CreateTime: date.GetDefaultTimeFormat(),
     }
@@ -137,10 +138,6 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
         up.Method = req.Method
         i += 1
     }
-    if len(req.Code) > 0 {
-        up.Code = req.Code
-        i += 1
-    }
     if len(req.Info) > 0 {
         up.Info = req.Info
         i += 1
@@ -152,10 +149,12 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     if i <= 0 {
         return 400000, nil, errors.New("至少更新一个参数")
     }
+    CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
+    up.Code = CheckCode
     var findData *model.Permission
     resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).
         Where("id <> ?", req.Id).
-        Where(&model.Permission{Code: req.Code}).First(&findData)
+        Where(&model.Permission{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("权限编码已存在")
     }

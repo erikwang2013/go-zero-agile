@@ -9,5 +9,6 @@ CREATE TABLE `ag_permission` (
   `status` tinyint NOT NULL DEFAULT '0' COMMENT '状态 0=开启 1=关闭',
   `is_delete` tinyint NOT NULL DEFAULT '0' COMMENT '是否删 0=否 1=是',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='权限表';
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ag_permission_UN` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='权限表';

@@ -1,6 +1,8 @@
 package dataFormat
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"math/rand"
@@ -194,7 +196,7 @@ func Page(limit, page int, count int64) (int, int) {
 func RemoveTopStruct(fields map[string]string) string {
     rsp := ""
     for _, err := range fields {
-        rsp += err+" "
+        rsp += err + " "
     }
     return rsp
 }
@@ -268,4 +270,9 @@ func CheckMobile(phone string) bool {
 
 }
 
-
+func GetMd5(key string) string {
+    md := md5.New()
+    md.Write([]byte(key))
+    md5Str := hex.EncodeToString(md.Sum(nil))
+    return md5Str
+}

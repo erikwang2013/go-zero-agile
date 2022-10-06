@@ -20,3 +20,7 @@ LogConf:
   Encoding: plain
   TimeFormat: Y-m-d H:i:s
   KeepDays: 15
+
+#设定固定的超级角色，角色属于这个的默认拥有所有权限
+Permission:
+  Role: admin

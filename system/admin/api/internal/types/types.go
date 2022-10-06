@@ -86,8 +86,7 @@ type PermissionAddReq struct {
     ParentId int    `json:"parent_id" validate:"gte=0"`                //父级
     Name     string `json:"name" validate:"required,max=30,min=4"`     //权限名称
     ApiUrl   string `json:"api_url" validate:"required,max=200,min=4"` //api地址
-    Method   string `json:"method" validate:"required,oneof=get post put delete,max=30,min=3"`
-    Code     string `json:"code"  validate:"required,max=50,min=4"`
+    Method   string `json:"method" validate:"required,oneof=GET POST PUT DELETE,max=30,min=3"`
     Info     string `json:"info,optional" validate:"max=100"`
     Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
@@ -110,8 +109,7 @@ type PermissionPutReq struct {
     ParentId int    `json:"parent_id,optional" validate:"gte=0"`                //父级
     Name     string `json:"name,optional" validate:"required,max=30,min=4"`     //权限名称
     ApiUrl   string `json:"api_url,optional" validate:"required,max=200,min=4"` //api地址
-    Method   string `json:"method,optional" validate:"required,oneof=get post put delete,max=30,min=3"`
-    Code     string `json:"code,optional"  validate:"required,max=50,min=4"`
+    Method   string `json:"method,optional" validate:"required,oneof=GET POST PUT DELETE,max=30,min=3"`
     Info     string `json:"info,optional" validate:"max=100"`
     Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
@@ -127,8 +125,7 @@ type PermissionSearchReq struct {
 }
 type RoleAddReq struct {
     ParentId int    `json:"parent_id" validate:"gte=0"`   //父级
-    Name     string `json:"name" validate:"max=30,min=4"` //角色名称
-    Code     string `json:"code"  validate:"max=50,min=4"`
+    Name     string `json:"name" validate:"max=30,min=2"` //角色名称
     Info     string `json:"info,optional" validate:"max=100"`
     Status   int8   `json:"status" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
@@ -148,7 +145,6 @@ type RolePutReq struct {
     Id       int    `json:"id" validate:"gt=0"`
     ParentId int    `json:"parent_id,optional" validate:"gte=0"`   //父级
     Name     string `json:"name,optional" validate:"max=30,min=4"` //角色名称
-    Code     string `json:"code,optional"  validate:"max=50,min=4"`
     Info     string `json:"info,optional" validate:"max=100"`
     Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
@@ -159,8 +155,6 @@ type RoleSearchReq struct {
     Name     string `json:"name,optional"`      //角色名称
     Code     string `json:"code,optional"`
     Status   int8   `json:"status,optional"` //状态 0=开启 1=关闭
-    Page     int    `json:"page"`
-    Limit    int    `json:"limit"`
 }
 
 //按钮格式
