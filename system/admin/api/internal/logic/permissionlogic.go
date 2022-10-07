@@ -241,11 +241,11 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
-        return 500000, nil, errors.New("查询用户列表失败")
+        return 500000, nil, errors.New("查询权限列表失败")
     }
     getAll := []*types.PermissionAddReply{}
     if len(all) <= 0 {
-        return 404000, getAll, nil
+        return 404000, getAll, errors.New("用户权限异常或无权限")
     }
     for _, v := range all {
         r := &types.PermissionAddReply{

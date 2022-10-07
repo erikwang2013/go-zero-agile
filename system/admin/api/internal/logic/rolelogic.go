@@ -177,7 +177,7 @@ func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err
     }
     result := l.svcCtx.Gorm.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
     if result.Error != nil {
-        return 500000, nil, errors.New("删除权限失败")
+        return 500000, nil, errors.New("删除角色失败")
     }
     return 200000, &req.Id, nil
 }
@@ -289,11 +289,11 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     //result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     result := db.Find(&all)
     if result.Error != nil {
-        return 500000, nil, errors.New("查询用户列表失败")
+        return 500000, nil, errors.New("查询角色列表失败")
     }
     getAll := []*types.RoleAddReply{}
     if len(all) <= 0 {
-        return 404000, getAll, nil
+        return 404000, getAll, errors.New("角色不存在或异常")
     }
     for _, v := range all {
         r := &types.RoleAddReply{

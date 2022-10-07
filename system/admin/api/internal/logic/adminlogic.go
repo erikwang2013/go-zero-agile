@@ -424,7 +424,7 @@ func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err erro
         getRole = []*types.RoleAddPermissionReply{}
     }
     if adminInfo.Id <= 0 {
-        return 404000, &types.AdminInfoReply{}, nil
+        return 404000, &types.AdminInfoReply{}, errors.New("用户不存在")
     }
     return 200000, &types.AdminInfoReply{
         Id:       adminInfo.Id,
