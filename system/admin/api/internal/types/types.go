@@ -82,7 +82,7 @@ type AdminAddReq struct {
 }
 
 type AdminInfoAllReq struct {
-    Id int `json:"id" validate:"required,gte=0"`
+    Id int `json:"id" validate:"required,gt=0"`
 }
 
 type PermissionAddReq struct {

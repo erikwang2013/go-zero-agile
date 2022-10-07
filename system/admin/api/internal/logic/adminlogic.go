@@ -409,7 +409,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
 }
 
 //获取个人信息
-func (l *AdminLogic) AdminInfo(req *types.AdminInfoAllReq) (code int, resp *string, err error) {
+func (l *AdminLogic) AdminInfo(req *types.AdminInfoAllReq) (code int, resp *types.AdminInfoReply, err error) {
     validate := validator.New()
     validateRegister(validate)
     if req.Id > 0 {
@@ -420,6 +420,44 @@ func (l *AdminLogic) AdminInfo(req *types.AdminInfoAllReq) (code int, resp *stri
             return 400001, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-
-    return 200000, nil, nil
+    var adminInfo *model.Admin
+    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Id: req.Id}).
+        First(&adminInfo)
+    logx.Error(resultAdmin.Error)
+    if resultAdmin.RowsAffected > 0 {
+        return 400000, nil, errors.New("用户名已存在")
+    }
+    getRole, err := getRolePermission(l.svcCtx, req.Id)
+    if err != nil {
+        getRole = []*types.RoleAddPermissionReply{}
+    }
+    if adminInfo.Id <= 0 {
+        return 404000, &types.AdminInfoReply{}, nil
+    }
+    return 200000, &types.AdminInfoReply{
+        Id:       adminInfo.Id,
+        ParentId: adminInfo.ParentId,
+        Role:     getRole,
+        HeadImg:  adminInfo.HeadImg,
+        Name:     adminInfo.Name,
+        NickName: adminInfo.NickName,
+        Gender: types.StatusValueName{
+            Key: adminInfo.Gender,
+            Val: model.AdminGenderName[adminInfo.Gender],
+        },
+        Phone: adminInfo.Phone,
+        Email: adminInfo.Email,
+        Status: types.StatusValueName{
+            Key: adminInfo.Status,
+            Val: dataFormat.StatusName[adminInfo.Status],
+        },
+        IsDelete: types.StatusValueName{
+            Key: adminInfo.IsDelete,
+            Val: dataFormat.IsDeleteName[adminInfo.IsDelete],
+        },
+        PromotionCode: adminInfo.PromotionCode,
+        Info:          adminInfo.Info,
+        CreateTime:    adminInfo.CreateTime.Unix(),
+        UpdateTime:    adminInfo.UpdateTime.Unix(),
+    }, nil
 }

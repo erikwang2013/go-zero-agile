@@ -292,6 +292,9 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
         return 500000, nil, errors.New("查询用户列表失败")
     }
     getAll := []*types.RoleAddReply{}
+    if len(all) <= 0 {
+        return 404000, getAll, nil
+    }
     for _, v := range all {
         r := &types.RoleAddReply{
             Id:         int(v.Id),

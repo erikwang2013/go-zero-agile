@@ -245,7 +245,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     }
     getAll := []*types.PermissionAddReply{}
     if len(all) <= 0 {
-        return 200000, getAll, nil
+        return 404000, getAll, nil
     }
     for _, v := range all {
         r := &types.PermissionAddReply{
