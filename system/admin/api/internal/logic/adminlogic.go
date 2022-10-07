@@ -359,7 +359,16 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
         req.Page = 1
     }
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
+    db := l.svcCtx.Gorm.Where(&getData)
+    if req.ParentId >= 0 {
+        db = db.Where("parent_id =?", req.ParentId)
+    }
+    if req.Status >= 0 {
+        db = db.Where("status =?", req.Status)
+    }
+    if req.Gender >= 0 {
+        db = db.Where("gender =?", req.Gender)
+    }
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)

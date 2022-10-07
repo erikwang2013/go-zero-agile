@@ -60,11 +60,11 @@ func getRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.R
     }
     for _, v := range allRole {
         r := &types.RoleAddPermissionReply{
-            Id:         int(v.Id),
-            ParentId:   v.ParentId,
-            Name:       v.Name,
-            Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
-            Code:       v.Code,
+            Id:       int(v.Id),
+            ParentId: v.ParentId,
+            Name:     v.Name,
+            Status:   types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
+            Code:     v.Code,
         }
         var allRolePermission []*model.RolePermission
         rolePermission := svcCtx.Gorm.Model(&model.RolePermission{}).
@@ -94,13 +94,13 @@ func getRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.R
         }
         for _, vpd := range allPermission {
             rpd := &types.PermissionGetReply{
-                Id:         int(vpd.Id),
-                ParentId:   vpd.ParentId,
-                ApiUrl:     vpd.ApiUrl,
-                Method:     vpd.Method,
-                Name:       vpd.Name,
-                Status:     types.StatusValueName{Key: vpd.Status, Val: dataFormat.StatusName[vpd.Status]},
-                Code:       vpd.Code,
+                Id:       int(vpd.Id),
+                ParentId: vpd.ParentId,
+                ApiUrl:   vpd.ApiUrl,
+                Method:   vpd.Method,
+                Name:     vpd.Name,
+                Status:   types.StatusValueName{Key: vpd.Status, Val: dataFormat.StatusName[vpd.Status]},
+                Code:     vpd.Code,
             }
             getAllPer = append(getAllPer, rpd)
         }
@@ -121,7 +121,7 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     }
     CheckCode := dataFormat.GetMd5(stringx.Rand())
     var findData *model.Role
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).Where(&model.Role{Code: CheckCode}).First(&findData)
+    resultFindCode := l.svcCtx.Gorm.Where(&model.Role{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
@@ -216,8 +216,8 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     up.Code = CheckCode
     var findData *model.Role
     resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Role{Code: CheckCode}).First(&findData)
+        Where("id <> ? and code=?", req.Id, CheckCode).
+        First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
@@ -277,7 +277,13 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     }
     var all []*model.Role
     //var total int64
-    db := l.svcCtx.Gorm.Model(&model.Role{}).Where(&getData)
+    db := l.svcCtx.Gorm.Where(&getData)
+    if req.ParentId >= 0 {
+        db = db.Where("parent_id =?", req.ParentId)
+    }
+    if req.Status >= 0 {
+        db = db.Where("status =?", req.Status)
+    }
     // db.Count(&total)
     // pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     //result := db.Limit(pageSetNum).Offset(offset).Find(&all)

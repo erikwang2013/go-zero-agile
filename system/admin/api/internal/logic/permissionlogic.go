@@ -47,8 +47,9 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         return 400000, nil, errors.New("权限编码已存在")
     }
 
-    resultFindUrl := l.svcCtx.Gorm.Model(&model.Permission{}).
-        Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).First(&findData)
+    resultFindUrl := l.svcCtx.Gorm.
+        Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).
+        First(&findData)
     if resultFindUrl.RowsAffected > 0 {
         return 400000, nil, errors.New("url和请求类型已存在")
     }
@@ -155,15 +156,15 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     up.Code = CheckCode
     var findData *model.Permission
     resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Permission{Code: CheckCode, IsDelete: 0}).First(&findData)
+        Where("id <> ? and code=? and is_delete=?", req.Id, CheckCode, 0).
+        First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("权限编码已存在")
     }
 
     resultFindUrl := l.svcCtx.Gorm.Model(&model.Permission{}).
-        Where("id <> ?", req.Id).
-        Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method, IsDelete: 0}).First(&findData)
+        Where("id <> ? and api_url=? and method=? and is_delete=?", req.Id, req.ApiUrl, req.Method, 0).
+        First(&findData)
     if resultFindUrl.RowsAffected > 0 {
         return 400000, nil, errors.New("url和请求类型已存在")
     }
@@ -229,7 +230,13 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     }
     var all []*model.Permission
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
+    db := l.svcCtx.Gorm.Where(&getData)
+    if req.ParentId >= 0 {
+        db = db.Where("parent_id =?", req.ParentId)
+    }
+    if req.Status >= 0 {
+        db = db.Where("status =?", req.Status)
+    }
     db.Count(&total)
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
