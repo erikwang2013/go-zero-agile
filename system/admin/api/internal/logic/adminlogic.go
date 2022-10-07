@@ -360,7 +360,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
         req.Page = 1
     }
     var total int64
-    db := l.svcCtx.Gorm.Where(&getData)
+    db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }
@@ -374,6 +374,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
+        logx.Error(result.Error)
         return 500000, nil, errors.New("查询用户列表失败")
     }
     getAll := []*types.AdminInfoReply{}

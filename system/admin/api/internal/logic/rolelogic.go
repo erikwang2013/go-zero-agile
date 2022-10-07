@@ -277,7 +277,7 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     }
     var all []*model.Role
     //var total int64
-    db := l.svcCtx.Gorm.Where(&getData)
+    db := l.svcCtx.Gorm.Model(&model.Role{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }

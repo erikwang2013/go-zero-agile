@@ -230,7 +230,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     }
     var all []*model.Permission
     var total int64
-    db := l.svcCtx.Gorm.Where(&getData)
+    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }

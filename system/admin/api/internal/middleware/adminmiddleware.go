@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -36,6 +37,9 @@ func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
             httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
             return
         }
+        getId:=r.Context().Value("admin_id")
+        logx.Error("===获取id==")
+        logx.Error(getId)
         checkStr := dataFormat.GetMd5(r.RequestURI + r.Method)
         result := CheckPermission(checkStr)
         if false == result {
