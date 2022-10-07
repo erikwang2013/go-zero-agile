@@ -1,10 +1,8 @@
 package middleware
 
 import (
-	"context"
-	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/errorx"
-	"fmt"
+	"erik-agile/system/admin/api/internal/common"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -18,17 +16,7 @@ func NewAdminMiddleware() *AdminMiddleware {
     return &AdminMiddleware{}
 }
 
-//获取用户id
-func GetAdminId(ctx context.Context) int {
-    adminId := ctx.Value("admin_id")
-    getAdminId := fmt.Sprintf("%v", adminId)
-    return dataFormat.StringToInt(getAdminId)
-}
 
-//校验权限
-func CheckPermission(checkStr string) bool {
-    return true
-}
 
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -37,11 +25,11 @@ func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
             httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
             return
         }
-        getId:=r.Context().Value("admin_id")
+        getId := r.Context().Value("admin_id")
         logx.Error("===获取id==")
         logx.Error(getId)
-        checkStr := dataFormat.GetMd5(r.RequestURI + r.Method)
-        result := CheckPermission(checkStr)
+        
+        result := common.CheckPermission(r.RequestURI,r.Method)
         if false == result {
             httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
             return

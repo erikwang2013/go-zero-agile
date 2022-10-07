@@ -7,7 +7,7 @@ import (
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
-	"erik-agile/system/admin/api/internal/middleware"
+	"erik-agile/system/admin/api/internal/common"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
@@ -113,7 +113,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("分配用户角色失败")
     }
     tx.Commit()
-    getRole, err := getRolePermission(l.svcCtx, setData.Id)
+    getRole, err := common.GetRolePermission(l.svcCtx,setData.Id)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }
@@ -383,7 +383,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     }
 
     for _, v := range all {
-        getRole, err := getRolePermission(l.svcCtx, v.Id)
+        getRole, err := common.GetRolePermission(l.svcCtx,v.Id)
         if err != nil {
             getRole = []*types.RoleAddPermissionReply{}
         }
@@ -412,14 +412,14 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
 
 //获取个人信息
 func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err error) {
-    adminId := middleware.GetAdminId(l.ctx)
+    adminId := common.GetAdminId(l.ctx)
     var adminInfo *model.Admin
     resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Id: adminId}).
         First(&adminInfo)
     if resultAdmin.Error != nil {
         return 400000, nil, errors.New("用户异常，请稍后再试")
     }
-    getRole, err := getRolePermission(l.svcCtx, adminId)
+    getRole, err := common.GetRolePermission(l.svcCtx,adminId)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }
