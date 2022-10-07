@@ -419,7 +419,6 @@ func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err erro
         return 400000, nil, errors.New("用户异常，请稍后再试")
     }
     getRole, err := getRolePermission(l.svcCtx, adminId)
-    logx.Error(err)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }
