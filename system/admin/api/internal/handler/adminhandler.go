@@ -84,13 +84,9 @@ func adminHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 
 func adminInfoHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        var req types.AdminInfoAllReq
-        if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
-            return
-        }
+
         l := logic.NewAdminLogic(r.Context(), svcCtx)
-        code, resp, err := l.AdminInfo(&req)
+        code, resp, err := l.AdminInfo()
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {

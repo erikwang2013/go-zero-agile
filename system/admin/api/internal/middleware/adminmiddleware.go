@@ -20,7 +20,7 @@ func NewAdminMiddleware() *AdminMiddleware {
 //获取用户id
 func GetAdminId(ctx context.Context) int {
     adminId := ctx.Value("admin_id")
-    getAdminId := fmt.Sprintf("%v\n", adminId)
+    getAdminId := fmt.Sprintf("%v", adminId)
     return dataFormat.StringToInt(getAdminId)
 }
 

@@ -7,6 +7,7 @@ import (
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
+	"erik-agile/system/admin/api/internal/middleware"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
@@ -409,25 +410,16 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
 }
 
 //获取个人信息
-func (l *AdminLogic) AdminInfo(req *types.AdminInfoAllReq) (code int, resp *types.AdminInfoReply, err error) {
-    validate := validator.New()
-    validateRegister(validate)
-    if req.Id > 0 {
-        err = validate.Var(req.Id, "required,gte=0")
-        if err != nil {
-            varError := err.(validator.ValidationErrors)
-            transStr := varError.Translate(trans)
-            return 400001, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
-        }
-    }
+func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err error) {
+    adminId := middleware.GetAdminId(l.ctx)
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Id: req.Id}).
+    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Id: adminId}).
         First(&adminInfo)
-    logx.Error(resultAdmin.Error)
-    if resultAdmin.RowsAffected > 0 {
-        return 400000, nil, errors.New("用户名已存在")
+    if resultAdmin.Error != nil {
+        return 400000, nil, errors.New("用户异常，请稍后再试")
     }
-    getRole, err := getRolePermission(l.svcCtx, req.Id)
+    getRole, err := getRolePermission(l.svcCtx, adminId)
+    logx.Error(err)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }

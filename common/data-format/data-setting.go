@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"unicode"
 
@@ -43,6 +44,8 @@ func Decimal(value float64) float64 {
 
 // string转int
 func StringToInt(a string) int {
+    a = strings.Replace(a, "\n", "", -1)
+    a = strings.Replace(a, "\r", "", -1)
     d, _ := strconv.Atoi(a)
     return d
 }
