@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"erik-agile/common/errorx"
-	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"net/http"
@@ -26,11 +25,11 @@ func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
             httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
             return
         }
-        result := commonData.CheckPermission(m.db.Gorm, r.Context(), m.config, r.RequestURI, r.Method)
-        if false == result {
-            httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
-            return
-        }
+        // result := commonData.CheckPermission(m.db.Gorm, r.Context(), m.config, r.RequestURI, r.Method)
+        // if false == result {
+        //     httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
+        //     return
+        // }
         next(w, r)
     }
 }

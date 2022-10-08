@@ -170,12 +170,6 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if req.Status >= 0 {
         err = validate.Var(req.Status, "oneof=-1 0 1")
     }
-    // if req.Page >= 1 {
-    //     err = validate.Var(req.Page, "number,lte=10000,gte=1")
-    // }
-    // if req.Limit >= 1 {
-    //     err = validate.Var(req.Limit, "number,lte=1000,gte=1")
-    // }
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
@@ -207,9 +201,6 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if req.Status >= 0 {
         db = db.Where("status =?", req.Status)
     }
-    // db.Count(&total)
-    // pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
-    //result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     result := db.Find(&all)
     if result.Error != nil {
         return 500000, nil, errors.New("查询角色列表失败")

@@ -119,12 +119,12 @@ type PermissionGetReply struct {
 
 type PermissionPutReq struct {
     Id       int    `json:"id" validate:"required,gt=0"`
-    ParentId int    `json:"parent_id,optional" validate:"gte=0"`                //父级
+    ParentId int    `json:"parent_id,optional" validate:"gte=0"`       //父级
     Name     string `json:"name,optional" validate:"required,max=30,min=4"`     //权限名称
     ApiUrl   string `json:"api_url,optional" validate:"required,max=200,min=4"` //api地址
     Method   string `json:"method,optional" validate:"required,oneof=GET POST PUT DELETE,max=30,min=3"`
     Info     string `json:"info,optional" validate:"max=100"`
-    Status   int8   `json:"status,optional" validate:"number,oneof=-1 0 1"` //状态 0=开启 1=关闭
+    Status   int8   `json:"status,optional" validate:"oneof=-1 0 1"` //状态 0=开启 1=关闭
 }
 
 type PermissionSearchReq struct {
