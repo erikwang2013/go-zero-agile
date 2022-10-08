@@ -4,6 +4,7 @@ import (
 	"context"
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
+	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
@@ -32,7 +33,6 @@ func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Go
     }
 }
 
-
 func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAddReply, err error) {
     validate := validator.New()
     validateRegister(validate)
@@ -60,10 +60,34 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     if len(req.Info) > 0 {
         setData.Info = req.Info
     }
-    result := l.db.Gorm.Create(&setData)
+    tx := l.db.Gorm.Begin()
+    result := tx.Create(&setData)
     if result.Error != nil {
+        tx.Rollback()
         return 500000, nil, errors.New("新增角色失败")
     }
+    permissionIds := strings.Split(req.Permission, ",")
+    rolePermission := []model.RolePermission{}
+    if len(permissionIds) <= 0 {
+        tx.Rollback()
+        return 500000, nil, errors.New("新增角色权限失败")
+    }
+    for _, pr := range permissionIds {
+        rolePermission = append(rolePermission, model.RolePermission{
+            RoleId:              setData.Id,
+            PermissionId:        dataFormat.StringToInt(pr),
+            PermissionChilderId: "[]",
+            PermissionButton:    "[]",
+            Status:              0,
+            IsDelete:            0,
+        })
+    }
+    resultPr := tx.Create(&rolePermission)
+    if resultPr.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("新增角色权限失败")
+    }
+    tx.Commit()
     return 200000, &types.RoleAddReply{
         Id:       setData.Id,
         ParentId: setData.ParentId,
@@ -98,10 +122,18 @@ func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err
             return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-    result := l.db.Gorm.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
+    tx := l.db.Gorm.Begin()
+    result := tx.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
     if result.Error != nil {
+        tx.Rollback()
         return 500000, nil, errors.New("删除角色失败")
     }
+    resultPr := tx.Model(&model.RolePermission{}).Where("role_id IN ?", ids).Updates(model.RolePermission{IsDelete: 1})
+    if resultPr.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("删除角色权限失败")
+    }
+    tx.Commit()
     return 200000, &req.Id, nil
 }
 
@@ -141,18 +173,47 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     resultFindCode := l.db.Gorm.Model(&model.Role{}).
         Where("id <> ? and code=?", req.Id, CheckCode).
         First(&findData)
-    if resultFindCode.RowsAffected > 0 {
+    if resultFindCode.Error != nil {
         return 400000, nil, errors.New("角色编码已存在")
     }
-    result := l.db.Gorm.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
+    tx := l.db.Gorm.Begin()
+    result := tx.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
+        tx.Rollback()
         return 500000, nil, errors.New("更新角色失败")
     }
+    resultPr := tx.Model(&model.RolePermission{}).Where("role_id = ?", req.Id).Updates(model.RolePermission{IsDelete: 1})
+    if resultPr.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("删除角色权限失败")
+    }
+    permissionIds := strings.Split(req.Permission, ",")
+    rolePermission := []model.RolePermission{}
+    if len(permissionIds) <= 0 {
+        tx.Rollback()
+        return 500000, nil, errors.New("新增角色权限失败")
+    }
+    for _, pr := range permissionIds {
+        rolePermission = append(rolePermission, model.RolePermission{
+            RoleId:              req.Id,
+            PermissionId:        dataFormat.StringToInt(pr),
+            PermissionChilderId: "[]",
+            PermissionButton:    "[]",
+            Status:              0,
+            IsDelete:            0,
+        })
+    }
+    resultPrC := tx.Create(&rolePermission)
+    if resultPrC.Error != nil {
+        tx.Rollback()
+        return 500000, nil, errors.New("新增角色权限失败")
+    }
+    tx.Commit()
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
 }
 
-func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.RoleAddReply, err error) {
+func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.RoleAddPermissionReply, err error) {
     validate := validator.New()
     validateRegister(validate)
     if req.Id > 0 {
@@ -205,22 +266,26 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if result.Error != nil {
         return 500000, nil, errors.New("查询角色列表失败")
     }
-    getAll := []*types.RoleAddReply{}
+    getAll := []*types.RoleAddPermissionReply{}
     if len(all) <= 0 {
         return 404000, getAll, errors.New("角色不存在或异常")
     }
-    for _, v := range all {
-        r := &types.RoleAddReply{
-            Id:         int(v.Id),
-            ParentId:   v.ParentId,
-            Name:       v.Name,
-            Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
-            IsDelete:   types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
-            Code:       v.Code,
-            Info:       v.Info,
-            CreateTime: v.CreateTime.Unix(),
-        }
-        getAll = append(getAll, r)
+    getAll, err = commonData.GetRole(l.db.Gorm, all)
+    if err != nil {
+        return 500000, nil, errors.New("角色不存在或异常")
     }
+    // for _, v := range permission {
+    //     r := &types.RoleAddReply{
+    //         Id:         v.Id,
+    //         ParentId:   v.ParentId,
+    //         Name:       v.Name,
+    //         Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
+    //         IsDelete:   types.StatusValueName{Key: v.IsDelete, Val: dataFormat.IsDeleteName[v.IsDelete]},
+    //         Code:       v.Code,
+    //         Info:       v.Info,
+    //         CreateTime: v.CreateTime.Unix(),
+    //     }
+    //     getAll = append(getAll, r)
+    // }
     return 200000, getAll, nil
 }

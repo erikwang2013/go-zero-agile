@@ -97,6 +97,14 @@ func GetRolePermission(Gorm *gorm.DB, ctx context.Context) (resp []*types.RoleAd
     if resultRole.Error != nil {
         return nil, errors.New("角色不存在")
     }
+    getRoleAll, err := GetRole(Gorm, allRole)
+    if err != nil {
+        return nil, errors.New("用户角色权限不存在")
+    }
+    return getRoleAll, nil
+}
+
+func GetRole(Gorm *gorm.DB, allRole []*model.Role) (resp []*types.RoleAddPermissionReply, err error) {
     getRoleAll := []*types.RoleAddPermissionReply{}
     if len(allRole) <= 0 {
         return getRoleAll, nil
