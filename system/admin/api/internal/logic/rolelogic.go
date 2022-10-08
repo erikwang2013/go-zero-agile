@@ -173,7 +173,8 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     resultFindCode := l.db.Gorm.Model(&model.Role{}).
         Where("id <> ? and code=?", req.Id, CheckCode).
         First(&findData)
-    if resultFindCode.Error != nil {
+        
+    if resultFindCode.RowsAffected >0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
     tx := l.db.Gorm.Begin()
