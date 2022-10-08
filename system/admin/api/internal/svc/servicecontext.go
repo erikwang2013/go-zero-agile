@@ -32,6 +32,6 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config, db *gorm.Gormdb) *ServiceContext {
     return &ServiceContext{
         Config:      c,
-        AdminMiddle: middleware.NewAdminMiddleware(db).Handle,
+        AdminMiddle: middleware.NewAdminMiddleware(db,c).Handle,
     }
 }

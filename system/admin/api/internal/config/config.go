@@ -19,6 +19,9 @@ type Config struct {
         AccessSecret string
         AccessExpire int64
     }
-    LogConf logx.LogConf
+    Permission struct {
+        Role string
+    }
+    LogConf  logx.LogConf
     AdminRpc zrpc.RpcClientConf
 }

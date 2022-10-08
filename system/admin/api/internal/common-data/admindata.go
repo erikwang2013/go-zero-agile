@@ -2,31 +2,59 @@ package commonData
 
 import (
 	"context"
-	"encoding/json"
 	dataFormat "erik-agile/common/data-format"
+	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"gorm.io/gorm"
 )
 
 //校验权限
-func CheckPermission(Gorm *gorm.DB, ctx context.Context, url, method string) bool {
+func CheckPermission(Gorm *gorm.DB, ctx context.Context, c config.Config, url, method string) bool {
     checkStr := dataFormat.GetMd5(url + method)
-    logx.Error(checkStr)
     result, err := GetRolePermission(Gorm, ctx)
     if err != nil {
         logx.Error("校验权限异常")
         logx.Error(err)
         return false
     }
-    jsonData, _ := json.Marshal(result)
-    logx.Error(string(jsonData))
-    //var db *gorm.Gormdb
-    return true
+
+    if len(result) <= 0 {
+        logx.Error("账户未配置权限")
+        return false
+    }
+    roleAll := c.Permission.Role
+    rolePermission := 0
+    permissionUrl := map[string]bool{}
+    for _, v := range result {
+        if strings.Compare(v.Code, roleAll) == 0 {
+            rolePermission = 1
+            break
+        }
+        if len(v.Permission) <= 0 {
+            continue
+        }
+        for _, p := range v.Permission {
+            permissionUrl[p.Code] = true
+        }
+    }
+    if rolePermission == 1 {
+        return true
+    }
+    if len(permissionUrl) <= 0 {
+        logx.Error("账户权限不存在")
+        return false
+    }
+    if permissionUrl[checkStr] == true {
+        return true
+    }
+    logx.Error("账户校验完成，校验异常")
+    return false
 }
 
 //获取用户id
