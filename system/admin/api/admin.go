@@ -27,9 +27,9 @@ func main() {
     logx.MustSetup(c.LogConf)
     server := rest.MustNewServer(c.RestConf)
     defer server.Stop()
-
-    ctx := svc.NewServiceContext(c)
     db := gorm.NewGormdb(c)
+    ctx := svc.NewServiceContext(c, db)
+
     handler.RegisterHandlers(server, ctx, db)
     // 自定义错误
     httpx.SetErrorHandler(func(err error) (int, interface{}) {

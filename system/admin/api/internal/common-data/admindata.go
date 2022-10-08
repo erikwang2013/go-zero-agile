@@ -2,6 +2,7 @@ package commonData
 
 import (
 	"context"
+	"encoding/json"
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
@@ -13,9 +14,18 @@ import (
 )
 
 //校验权限
-func CheckPermission(url, method string) bool {
+func CheckPermission(Gorm *gorm.DB, ctx context.Context, url, method string) bool {
     checkStr := dataFormat.GetMd5(url + method)
     logx.Error(checkStr)
+    result, err := GetRolePermission(Gorm, ctx)
+    if err != nil {
+        logx.Error("校验权限异常")
+        logx.Error(err)
+        return false
+    }
+    jsonData, _ := json.Marshal(result)
+    logx.Error(string(jsonData))
+    //var db *gorm.Gormdb
     return true
 }
 

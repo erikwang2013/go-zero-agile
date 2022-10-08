@@ -5,7 +5,7 @@ import (
     "net/http"
 
     "erik-agile/system/admin/api/internal/svc"
-
+    "erik-agile/system/admin/api/internal/svc/gorm"
     "github.com/zeromicro/go-zero/rest"
 )
 
@@ -15,7 +15,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext, db *go
             {
                 Method:  http.MethodPost,
                 Path:    "/system/admin/login",
-                Handler: loginHandler(serverCtx),
+                Handler: loginHandler(serverCtx, db),
             },
         },
     )
