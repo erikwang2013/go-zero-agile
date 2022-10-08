@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"erik-agile/common/errorx"
-	"erik-agile/system/admin/api/internal/common"
+	commonData "erik-agile/system/admin/api/internal/common-data"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/core/logx"
@@ -17,7 +17,6 @@ func NewAdminMiddleware() *AdminMiddleware {
 }
 
 
-
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         getToken := r.Header.Get("Authorization")
@@ -28,8 +27,7 @@ func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
         getId := r.Context().Value("admin_id")
         logx.Error("===获取id==")
         logx.Error(getId)
-        
-        result := common.CheckPermission(r.RequestURI,r.Method)
+         result := commonData.CheckPermission(r.RequestURI,r.Method)
         if false == result {
             httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
             return

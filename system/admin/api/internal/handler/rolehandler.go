@@ -5,20 +5,21 @@ import (
 	"erik-agile/common/successx"
 	"erik-agile/system/admin/api/internal/logic"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"net/http"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func roleCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func roleCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleAddReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx)
+        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Create(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -28,14 +29,14 @@ func roleCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func roleDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func roleDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx)
+        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Delete(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -45,14 +46,14 @@ func roleDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func rolePutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func rolePutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RolePutReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx)
+        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Put(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -62,14 +63,14 @@ func rolePutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func roleHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func roleHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleSearchReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx)
+        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Index(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))

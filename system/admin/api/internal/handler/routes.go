@@ -9,7 +9,7 @@ import (
     "github.com/zeromicro/go-zero/rest"
 )
 
-func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
+func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext, db *gorm.Gormdb) {
     server.AddRoutes(
         []rest.Route{
             {
@@ -27,67 +27,67 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/admin",
-                    Handler: adminCreateHandler(serverCtx),
+                    Handler: adminCreateHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/admin",
-                    Handler: adminDeleteHandler(serverCtx),
+                    Handler: adminDeleteHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/admin",
-                    Handler: adminPutHandler(serverCtx),
+                    Handler: adminPutHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/admin",
-                    Handler: adminHandler(serverCtx),
+                    Handler: adminHandler(serverCtx, db),
                 },
-                 {
+                {
                     Method:  http.MethodGet,
                     Path:    "/system/admin/info",
-                    Handler: adminInfoHandler(serverCtx),
+                    Handler: adminInfoHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/permission",
-                    Handler: permissionCreateHandler(serverCtx),
+                    Handler: permissionCreateHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/permission",
-                    Handler: permissionDeleteHandler(serverCtx),
+                    Handler: permissionDeleteHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/permission",
-                    Handler: permissionPutHandler(serverCtx),
+                    Handler: permissionPutHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/permission",
-                    Handler: permissionHandler(serverCtx),
+                    Handler: permissionHandler(serverCtx, db),
                 },
-                 {
+                {
                     Method:  http.MethodPost,
                     Path:    "/system/role",
-                    Handler: roleCreateHandler(serverCtx),
+                    Handler: roleCreateHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/role",
-                    Handler: roleDeleteHandler(serverCtx),
+                    Handler: roleDeleteHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/role",
-                    Handler: rolePutHandler(serverCtx),
+                    Handler: rolePutHandler(serverCtx, db),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/role",
-                    Handler: roleHandler(serverCtx),
+                    Handler: roleHandler(serverCtx, db),
                 },
             }...,
         ),

@@ -5,6 +5,7 @@ import (
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
 	"errors"
@@ -19,13 +20,15 @@ type RoleLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
+    db     *gorm.Gormdb
 }
 
-func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RoleLogic {
+func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *RoleLogic {
     return &RoleLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
+        db:     gorm,
     }
 }
 
@@ -41,7 +44,7 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     }
     CheckCode := dataFormat.GetMd5(stringx.Rand())
     var findData *model.Role
-    resultFindCode := l.svcCtx.Gorm.Where(&model.Role{Code: CheckCode}).First(&findData)
+    resultFindCode := l.db.Gorm.Where(&model.Role{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
@@ -57,7 +60,7 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     if len(req.Info) > 0 {
         setData.Info = req.Info
     }
-    result := l.svcCtx.Gorm.Create(&setData)
+    result := l.db.Gorm.Create(&setData)
     if result.Error != nil {
         return 500000, nil, errors.New("新增角色失败")
     }
@@ -95,7 +98,7 @@ func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err
             return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-    result := l.svcCtx.Gorm.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
+    result := l.db.Gorm.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
     if result.Error != nil {
         return 500000, nil, errors.New("删除角色失败")
     }
@@ -135,13 +138,13 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     CheckCode := dataFormat.GetMd5(stringx.Rand())
     up.Code = CheckCode
     var findData *model.Role
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Role{}).
+    resultFindCode := l.db.Gorm.Model(&model.Role{}).
         Where("id <> ? and code=?", req.Id, CheckCode).
         First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("角色编码已存在")
     }
-    result := l.svcCtx.Gorm.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
+    result := l.db.Gorm.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
         return 500000, nil, errors.New("更新角色失败")
     }
@@ -197,7 +200,7 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     }
     var all []*model.Role
     //var total int64
-    db := l.svcCtx.Gorm.Model(&model.Role{}).Where(&getData)
+    db := l.db.Gorm.Model(&model.Role{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }

@@ -9,6 +9,7 @@ import (
 	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/handler"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -17,7 +18,6 @@ import (
 )
 
 var configFile = flag.String("f", "etc/admin-api.yaml", "the config file")
-
 
 func main() {
     flag.Parse()
@@ -29,7 +29,8 @@ func main() {
     defer server.Stop()
 
     ctx := svc.NewServiceContext(c)
-    handler.RegisterHandlers(server, ctx)
+    db := gorm.NewGormdb(c)
+    handler.RegisterHandlers(server, ctx, db)
     // 自定义错误
     httpx.SetErrorHandler(func(err error) (int, interface{}) {
         switch e := err.(type) {

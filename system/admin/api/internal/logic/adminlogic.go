@@ -7,8 +7,9 @@ import (
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
-	"erik-agile/system/admin/api/internal/common"
+	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
 
@@ -20,13 +21,15 @@ type AdminLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
+    db     *gorm.Gormdb
 }
 
-func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic {
+func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *AdminLogic {
     return &AdminLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
+        db:     gorm,
     }
 }
 
@@ -44,17 +47,17 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 400000, nil, errors.New("手机号格式错误")
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultAdmin := l.db.Gorm.Model(&model.Admin{}).
         Where("name =? and is_delete=?", req.Name, 0).First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
-    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultFindPhone := l.db.Gorm.Model(&model.Admin{}).
         Where("phone=? and is_delete=?", req.Phone, 0).First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
         return 400000, nil, errors.New("手机号已存在")
     }
-    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultFindEmail := l.db.Gorm.Model(&model.Admin{}).
         Where("email=? and is_delete=?", req.Email, 0).First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
         return 400000, nil, errors.New("邮箱已存在")
@@ -87,14 +90,14 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("密码生成失败")
     }
     setData.Password = byct
-    tx := l.svcCtx.Gorm.Begin()
+    tx := l.db.Gorm.Begin()
     resultAdd := tx.Create(&setData)
     if resultAdd.Error != nil {
         tx.Rollback()
         return 500000, nil, errors.New("新增用户失败")
     }
     var roleGroupInfo *model.AdminRoleGroup
-    resultFindRole := l.svcCtx.Gorm.Model(&model.AdminRoleGroup{}).
+    resultFindRole := l.db.Gorm.Model(&model.AdminRoleGroup{}).
         Where("role_id=? and admin_id=? and is_delete=?", req.RoleId, setData.Id, 0).
         First(&roleGroupInfo)
     if resultFindRole.RowsAffected > 0 {
@@ -113,7 +116,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         return 500000, nil, errors.New("分配用户角色失败")
     }
     tx.Commit()
-    getRole, err := common.GetRolePermission(l.svcCtx,setData.Id)
+    getRole, err := commonData.GetRolePermission(l.db.Gorm, l.ctx)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }
@@ -161,7 +164,7 @@ func (l *AdminLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, er
             return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-    result := l.svcCtx.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
+    result := l.db.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
     if result.Error != nil {
         return 500000, nil, errors.New("删除用户失败")
     }
@@ -230,32 +233,32 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
         return 400000, nil, errors.New("至少更新一个参数")
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultAdmin := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and name=? and is_delete=?", req.Id, req.Name, 0).
         First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
         return 400000, nil, errors.New("用户名已存在")
     }
-    resultFindPhone := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultFindPhone := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and phone=? and is_delete=?", req.Id, req.Phone, 0).
         First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
         return 400000, nil, errors.New("手机号已存在")
     }
-    resultFindEmail := l.svcCtx.Gorm.Model(&model.Admin{}).
+    resultFindEmail := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and email=? and is_delete=?", req.Id, req.Email, 0).
         First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
         return 400000, nil, errors.New("邮箱已存在")
     }
-    tx := l.svcCtx.Gorm.Begin()
+    tx := l.db.Gorm.Begin()
     result := tx.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
         tx.Rollback()
         return 500000, nil, errors.New("更新用户失败")
     }
     var roleGroupInfo *model.AdminRoleGroup
-    resultFindRole := l.svcCtx.Gorm.Model(&model.AdminRoleGroup{}).
+    resultFindRole := l.db.Gorm.Model(&model.AdminRoleGroup{}).
         Where("role_id=? and admin_id=? and is_delete=?", req.RoleId, req.Id, 0).
         First(&roleGroupInfo)
     if resultFindRole.RowsAffected > 0 {
@@ -360,7 +363,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
         req.Page = 1
     }
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Admin{}).Where(&getData)
+    db := l.db.Gorm.Model(&model.Admin{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }
@@ -383,7 +386,7 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
     }
 
     for _, v := range all {
-        getRole, err := common.GetRolePermission(l.svcCtx,v.Id)
+        getRole, err := commonData.GetRolePermission(l.db.Gorm, l.ctx)
         if err != nil {
             getRole = []*types.RoleAddPermissionReply{}
         }
@@ -412,14 +415,14 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
 
 //获取个人信息
 func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err error) {
-    adminId := common.GetAdminId(l.ctx)
+    adminId := commonData.GetAdminId(l.ctx)
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Id: adminId}).
+    resultAdmin := l.db.Gorm.Debug().Where(&model.Admin{Id: adminId}).
         First(&adminInfo)
     if resultAdmin.Error != nil {
         return 400000, nil, errors.New("用户异常，请稍后再试")
     }
-    getRole, err := common.GetRolePermission(l.svcCtx,adminId)
+    getRole, err := commonData.GetRolePermission(l.db.Gorm, l.ctx)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }

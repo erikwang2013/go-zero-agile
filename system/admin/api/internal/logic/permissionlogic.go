@@ -8,6 +8,7 @@ import (
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
 
@@ -19,13 +20,15 @@ type PermissionLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
+    db     *gorm.Gormdb
 }
 
-func NewPermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PermissionLogic {
+func NewPermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *PermissionLogic {
     return &PermissionLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
+        db:     gorm,
     }
 }
 
@@ -40,14 +43,14 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     }
     CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
     var findData *model.Permission
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).
+    resultFindCode := l.db.Gorm.Model(&model.Permission{}).
         Where(&model.Permission{Code: CheckCode, IsDelete: 0}).
         First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("权限编码已存在")
     }
 
-    resultFindUrl := l.svcCtx.Gorm.
+    resultFindUrl := l.db.Gorm.
         Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).
         First(&findData)
     if resultFindUrl.RowsAffected > 0 {
@@ -67,7 +70,7 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     if len(req.Info) > 0 {
         setData.Info = req.Info
     }
-    result := l.svcCtx.Gorm.Create(&setData)
+    result := l.db.Gorm.Create(&setData)
     if result.Error != nil {
         return 500000, nil, errors.New("新增权限失败")
     }
@@ -107,7 +110,7 @@ func (l *PermissionLogic) Delete(req *types.DeleteIdsReq) (code int, resp *strin
             return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
-    result := l.svcCtx.Gorm.Model(&model.Permission{}).Where("id IN ?", ids).Updates(model.Permission{IsDelete: 1})
+    result := l.db.Gorm.Model(&model.Permission{}).Where("id IN ?", ids).Updates(model.Permission{IsDelete: 1})
     if result.Error != nil {
         return 500000, nil, errors.New("删除权限失败")
     }
@@ -155,20 +158,20 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
     up.Code = CheckCode
     var findData *model.Permission
-    resultFindCode := l.svcCtx.Gorm.Model(&model.Permission{}).
+    resultFindCode := l.db.Gorm.Model(&model.Permission{}).
         Where("id <> ? and code=? and is_delete=?", req.Id, CheckCode, 0).
         First(&findData)
     if resultFindCode.RowsAffected > 0 {
         return 400000, nil, errors.New("权限编码已存在")
     }
 
-    resultFindUrl := l.svcCtx.Gorm.Model(&model.Permission{}).
+    resultFindUrl := l.db.Gorm.Model(&model.Permission{}).
         Where("id <> ? and api_url=? and method=? and is_delete=?", req.Id, req.ApiUrl, req.Method, 0).
         First(&findData)
     if resultFindUrl.RowsAffected > 0 {
         return 400000, nil, errors.New("url和请求类型已存在")
     }
-    result := l.svcCtx.Gorm.Model(&model.Permission{}).Where("id = ?", req.Id).Updates(up)
+    result := l.db.Gorm.Model(&model.Permission{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
         return 500000, nil, errors.New("更新权限失败")
     }
@@ -230,7 +233,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     }
     var all []*model.Permission
     var total int64
-    db := l.svcCtx.Gorm.Model(&model.Permission{}).Where(&getData)
+    db := l.db.Gorm.Model(&model.Permission{}).Where(&getData)
     if req.ParentId >= 0 {
         db = db.Where("parent_id =?", req.ParentId)
     }

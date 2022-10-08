@@ -7,19 +7,20 @@ import (
 	"erik-agile/common/successx"
 	"erik-agile/system/admin/api/internal/logic"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func permissionCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func permissionCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionAddReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewPermissionLogic(r.Context(), svcCtx)
+        l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Create(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -29,14 +30,14 @@ func permissionCreateHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func permissionDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func permissionDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewPermissionLogic(r.Context(), svcCtx)
+        l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Delete(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -46,14 +47,14 @@ func permissionDeleteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func permissionPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func permissionPutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionPutReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewPermissionLogic(r.Context(), svcCtx)
+        l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Put(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -63,14 +64,14 @@ func permissionPutHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     }
 }
 
-func permissionHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
+func permissionHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionSearchReq
         if err := httpx.Parse(r, &req); err != nil {
             httpx.Error(w, err)
             return
         }
-        l := logic.NewPermissionLogic(r.Context(), svcCtx)
+        l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Index(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))

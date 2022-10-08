@@ -1,13 +1,15 @@
-package common
+package commonData
 
 import (
-    "context"
-    dataFormat "erik-agile/common/data-format"
-    "erik-agile/system/admin/api/internal/svc"
-    "erik-agile/system/admin/api/internal/types"
-    "erik-agile/system/admin/model"
-    "errors"
-    "fmt"
+	"context"
+	dataFormat "erik-agile/common/data-format"
+	"erik-agile/system/admin/api/internal/types"
+	"erik-agile/system/admin/model"
+	"errors"
+	"fmt"
+
+	"github.com/zeromicro/go-zero/core/logx"
+	"gorm.io/gorm"
 )
 
 //校验权限
@@ -24,10 +26,19 @@ func GetAdminId(ctx context.Context) int {
     return dataFormat.StringToInt(getAdminId)
 }
 
+func GetRolePermissionArr(Gorm *gorm.DB, ctx context.Context) []*types.RoleAddPermissionReply {
+    result, err := GetRolePermission(Gorm, ctx)
+    if err != nil {
+        return []*types.RoleAddPermissionReply{}
+    }
+    return result
+}
+
 //获取用户的角色及权限
-func GetRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.RoleAddPermissionReply, err error) {
+func GetRolePermission(Gorm *gorm.DB, ctx context.Context) (resp []*types.RoleAddPermissionReply, err error) {
     var all []*model.AdminRoleGroup
-    result := svcCtx.Gorm.Model(&model.AdminRoleGroup{}).
+    adminId := GetAdminId(ctx)
+    result := Gorm.Model(&model.AdminRoleGroup{}).
         Where("admin_id = ? AND is_delete= ?", adminId, 0).Find(&all)
     if result.Error != nil {
         return nil, errors.New("用户组不存在")
@@ -42,7 +53,7 @@ func GetRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.R
 
     //查询角色
     var allRole []*model.Role
-    resultRole := svcCtx.Gorm.Model(&model.Role{}).
+    resultRole := Gorm.Model(&model.Role{}).
         Where("id IN ? AND is_delete= ?", roleIds, 0).
         Find(&allRole)
     if resultRole.Error != nil {
@@ -61,7 +72,7 @@ func GetRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.R
             Code:     v.Code,
         }
         var allRolePermission []*model.RolePermission
-        rolePermission := svcCtx.Gorm.Model(&model.RolePermission{}).
+        rolePermission := Gorm.Model(&model.RolePermission{}).
             Where("role_id = ? AND  is_delete= ?", v.Id, 0).Find(&allRolePermission)
         if rolePermission.Error != nil {
             continue
@@ -75,7 +86,7 @@ func GetRolePermission(svcCtx *svc.ServiceContext, adminId int) (resp []*types.R
             perIds = append(perIds, vp.PermissionId)
         }
         var allPermission []*model.Permission
-        resultRole := svcCtx.Gorm.Model(&model.Permission{}).
+        resultRole := Gorm.Model(&model.Permission{}).
             Where("id IN ? and is_delete = ?", perIds, 0).
             Find(&allPermission)
         if resultRole.Error != nil {

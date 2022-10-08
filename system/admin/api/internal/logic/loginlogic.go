@@ -9,6 +9,7 @@ import (
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/system/admin/api/internal/svc"
+	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
 
@@ -24,13 +25,15 @@ type LoginLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
+    db     *gorm.Gormdb
 }
 
-func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic {
+func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *LoginLogic {
     return &LoginLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
+        db:     gorm,
     }
 }
 
@@ -63,7 +66,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
         return 400000,nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
-    resultAdmin := l.svcCtx.Gorm.Debug().Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
+    resultAdmin := l.db.Gorm.Debug().Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
     if resultAdmin.Error != nil {
         return 500000,nil, errors.New("登录校验异常")
     }
@@ -83,7 +86,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
         AccessToken: token,
         LoginTime:   getTime,
     }
-    resultLog := l.svcCtx.Gorm.Create(adminLog)
+    resultLog := l.db.Gorm.Create(adminLog)
     if resultLog.Error != nil {
         return 500000,nil, errors.New("登录记录失败")
     }
