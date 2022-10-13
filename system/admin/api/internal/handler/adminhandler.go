@@ -83,7 +83,6 @@ func adminHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc 
 
 func adminInfoHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)
         code, resp, err := l.AdminInfo()
         if err != nil {
