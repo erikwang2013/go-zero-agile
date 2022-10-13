@@ -16,7 +16,6 @@ import (
 	"unicode"
 
 	"github.com/sony/sonyflake"
-	"github.com/zeromicro/go-zero/core/logx"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -86,6 +85,7 @@ func StringToFloat(s string) float64 {
     return f
 }
 
+//结构体转map
 func StructToMap(obj interface{}) map[string]interface{} {
     t := reflect.TypeOf(obj)
     v := reflect.ValueOf(obj)
@@ -96,6 +96,7 @@ func StructToMap(obj interface{}) map[string]interface{} {
     return data
 }
 
+//数字转字符串
 func ArrToString(arr []string) string {
 
     if len(arr) == 0 {
@@ -128,6 +129,7 @@ func GetIP() string {
     return ""
 }
 
+//数字去重
 func RemoveRepByLoop(slc []int) []int {
     result := []int{} // 存放结果
     for i := range slc {
@@ -145,6 +147,7 @@ func RemoveRepByLoop(slc []int) []int {
     return result
 }
 
+//字符串去重
 func RemoveRepByLoopString(slc []string) []string {
     result := []string{} // 存放结果
     for i := range slc {
@@ -180,6 +183,7 @@ func GetRemoteClientIp(r *http.Request) string {
 
     return remoteIp
 }
+
 func Page(limit, page int, count int64) (int, int) {
     pageSetNum := limit // 每页条数
 
@@ -239,8 +243,6 @@ func HashAndSalt(pwd string) (string, error) {
 func ValidatePasswords(hashedPwd, plainPwd string) bool {
     err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
     if err != nil {
-        logx.Info("==验证密码==")
-        logx.Info(err)
         return false
     }
     return true
