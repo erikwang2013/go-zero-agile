@@ -23,4 +23,4 @@ LogConf:
 
 #设定固定的超级角色，角色属于这个的默认拥有所有权限
 Permission:
-  Role: admin
+  Role: 54d128349d7f61982657d74097f093b1

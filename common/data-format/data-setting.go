@@ -281,3 +281,12 @@ func GetMd5(key string) string {
     md5Str := hex.EncodeToString(md.Sum(nil))
     return md5Str
 }
+
+func ArrayCheckInt(number []int, num int) bool {
+    for _, v := range number {
+        if v == num {
+            return true
+        }
+    }
+    return false
+}

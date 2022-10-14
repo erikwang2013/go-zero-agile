@@ -66,7 +66,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
         return 400000,nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
-    resultAdmin := l.db.Gorm.Debug().Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
+    resultAdmin := l.db.Gorm.Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
     if resultAdmin.Error != nil {
         return 500000,nil, errors.New("登录校验异常")
     }

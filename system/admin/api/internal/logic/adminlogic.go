@@ -414,10 +414,10 @@ func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.A
 }
 
 //获取个人信息
-func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err error) {
+func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminGetInfoReply, err error) {
     adminId := commonData.GetAdminId(l.ctx)
     var adminInfo *model.Admin
-    resultAdmin := l.db.Gorm.Debug().Where(&model.Admin{Id: adminId}).
+    resultAdmin := l.db.Gorm.Where(&model.Admin{Id: adminId}).
         First(&adminInfo)
     if resultAdmin.Error != nil {
         return 400000, nil, errors.New("用户异常，请稍后再试")
@@ -427,9 +427,9 @@ func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err erro
         getRole = []*types.RoleAddPermissionReply{}
     }
     if adminInfo.Id <= 0 {
-        return 404000, &types.AdminInfoReply{}, errors.New("用户不存在")
+        return 404000, &types.AdminGetInfoReply{}, errors.New("用户不存在")
     }
-    return 200000, &types.AdminInfoReply{
+    return 200000, &types.AdminGetInfoReply{
         Id:       adminInfo.Id,
         ParentId: adminInfo.ParentId,
         Role:     getRole,
@@ -445,10 +445,6 @@ func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminInfoReply, err erro
         Status: types.StatusValueName{
             Key: adminInfo.Status,
             Val: dataFormat.StatusName[adminInfo.Status],
-        },
-        IsDelete: types.StatusValueName{
-            Key: adminInfo.IsDelete,
-            Val: dataFormat.IsDeleteName[adminInfo.IsDelete],
         },
         PromotionCode: adminInfo.PromotionCode,
         Info:          adminInfo.Info,

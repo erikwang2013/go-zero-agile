@@ -73,7 +73,7 @@ func GetRolePermissionArr(Gorm *gorm.DB, ctx context.Context) []*types.RoleAddPe
 }
 
 //获取用户的角色及权限
-func GetRolePermission(Gorm *gorm.DB, ctx context.Context) (resp []*types.RoleAddPermissionReply, err error) {
+func GetRolePermission(Gorm *gorm.DB, ctx context.Context, getConfig ...string) (resp []*types.RoleAddPermissionReply, err error) {
     var all []*model.AdminRoleGroup
     adminId := GetAdminId(ctx)
     result := Gorm.Model(&model.AdminRoleGroup{}).
@@ -109,53 +109,63 @@ func GetRole(Gorm *gorm.DB, allRole []*model.Role) (resp []*types.RoleAddPermiss
     if len(allRole) <= 0 {
         return getRoleAll, nil
     }
+    roleIds := []int{}
     for _, v := range allRole {
-        r := &types.RoleAddPermissionReply{
-            Id:       int(v.Id),
-            ParentId: v.ParentId,
-            Name:     v.Name,
-            Status:   types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
-            Code:     v.Code,
-        }
-        var allRolePermission []*model.RolePermission
-        rolePermission := Gorm.Model(&model.RolePermission{}).
-            Where("role_id = ? AND  is_delete= ?", v.Id, 0).Find(&allRolePermission)
-        if rolePermission.Error != nil {
-            continue
-            //return nil, errors.New("角色权限不存在")
-        }
-        var perIds []int
-        if len(allRolePermission) <= 0 {
-            continue
-        }
-        for _, vp := range allRolePermission {
-            perIds = append(perIds, vp.PermissionId)
-        }
-        var allPermission []*model.Permission
-        resultRole := Gorm.Model(&model.Permission{}).
-            Where("id IN ? and is_delete = ?", perIds, 0).
-            Find(&allPermission)
-        if resultRole.Error != nil {
-            continue
-            //return nil, errors.New("权限不存在")
-        }
+        roleIds = append(roleIds, v.Id)
+    }
+    var allRolePermission []*model.RolePermission
+    rolePermission := Gorm.Model(&model.RolePermission{}).
+        Where("role_id in ? AND  is_delete= ?", roleIds, 0).Find(&allRolePermission)
+    if rolePermission.Error != nil {
+        return nil, errors.New("角色权限不存在")
+    }
+    if len(allRolePermission) <= 0 {
+        return nil, errors.New("角色权限未设置")
+    }
+    var perIds []int
+    for _, vp := range allRolePermission {
+        perIds = append(perIds, vp.PermissionId)
+    }
+    var allPermission []*model.Permission
+    resultRole := Gorm.Model(&model.Permission{}).
+        Where("id IN ? and is_delete = ?", perIds, 0).
+        Find(&allPermission)
+    if resultRole.Error != nil {
+        return nil, errors.New("权限不存在")
+    }
+
+    if len(allPermission) <= 0 {
+        return nil, errors.New("权限未设置")
+    }
+    for _, v := range allRole {
         getAllPer := []*types.PermissionGetReply{}
-        if len(allPermission) <= 0 {
-            continue
-        }
-        for _, vpd := range allPermission {
-            rpd := &types.PermissionGetReply{
-                Id:       int(vpd.Id),
-                ParentId: vpd.ParentId,
-                ApiUrl:   vpd.ApiUrl,
-                Method:   vpd.Method,
-                Name:     vpd.Name,
-                Status:   types.StatusValueName{Key: vpd.Status, Val: dataFormat.StatusName[vpd.Status]},
-                Code:     vpd.Code,
+        for _, pr := range allRolePermission {
+            if v.Id != pr.RoleId {
+                continue
             }
-            getAllPer = append(getAllPer, rpd)
+            for _, vpd := range allPermission {
+                if pr.PermissionId == vpd.Id {
+                    rpd := &types.PermissionGetReply{
+                        Id:       int(vpd.Id),
+                        ParentId: vpd.ParentId,
+                        ApiUrl:   vpd.ApiUrl,
+                        Method:   vpd.Method,
+                        Name:     vpd.Name,
+                        Status:   types.StatusValueName{Key: vpd.Status, Val: dataFormat.StatusName[vpd.Status]},
+                        Code:     vpd.Code,
+                    }
+                    getAllPer = append(getAllPer, rpd)
+                }
+            }
         }
-        r.Permission = getAllPer
+        r := &types.RoleAddPermissionReply{
+            Id:         v.Id,
+            ParentId:   v.ParentId,
+            Name:       v.Name,
+            Status:     types.StatusValueName{Key: v.Status, Val: dataFormat.StatusName[v.Status]},
+            Code:       v.Code,
+            Permission: getAllPer,
+        }
         getRoleAll = append(getRoleAll, r)
     }
     return getRoleAll, nil

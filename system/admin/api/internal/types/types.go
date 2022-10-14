@@ -3,7 +3,7 @@ package types
 
 type LoginReq struct {
     UserName string `json:"user_name" validate:"required,alphanum,max=20,min=4"`
-    Password string `json:"password" validate:"required,alphanum,max=30,min=6"`
+    Password string `json:"password" validate:"required,max=300,min=6"`
 }
 
 type LoginReply struct {
@@ -56,6 +56,23 @@ type AdminInfoReply struct {
     Email         string                    `json:"email"`          // 邮箱
     Status        StatusValueName           `json:"status"`         // 状态 0=开启 1=关闭
     IsDelete      StatusValueName           `json:"is_delete"`      // 是否删 0=否 1=是
+    PromotionCode string                    `json:"promotion_code"` // 推广码
+    Info          string                    `json:"info"`           // 备注
+    CreateTime    int64                     `json:"create_time"`
+    UpdateTime    int64                     `json:"update_time"`
+}
+
+type AdminGetInfoReply struct {
+    Id            int                       `json:"id"`
+    ParentId      int                       `json:"parent_id"` // 父级id
+    Role          []*RoleAddPermissionReply `json:"role"`      // 角色id
+    HeadImg       string                    `json:"head_img"`  // 用户头像
+    Name          string                    `json:"name"`
+    NickName      string                    `json:"nick_name"`      // 昵称
+    Gender        StatusValueName           `json:"gender"`         // 性别 0=女 1=男 2=保密
+    Phone         string                    `json:"phone"`          // 手机
+    Email         string                    `json:"email"`          // 邮箱
+    Status        StatusValueName           `json:"status"`         // 状态 0=开启 1=关闭
     PromotionCode string                    `json:"promotion_code"` // 推广码
     Info          string                    `json:"info"`           // 备注
     CreateTime    int64                     `json:"create_time"`
