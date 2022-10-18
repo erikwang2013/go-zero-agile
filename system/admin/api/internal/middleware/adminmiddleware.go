@@ -26,6 +26,9 @@ func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
             httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
             return
         }
+        r.Header.Set("Access-Control-Allow-Origin", "*")
+        r.Header.Set("Access-Control-Allow-Credentials","true")
+        r.Header.Set("Access-Control-Allow-Headers","Content-Type,Cache-Control,User-Agent,Keep-Alive,Authorization,authorization")
         result := commonData.CheckPermission(m.db.Gorm, r.Context(), m.config, r.RequestURI, r.Method)
         if false == result {
             httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))

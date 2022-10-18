@@ -78,6 +78,7 @@ func GetRolePermission(Gorm *gorm.DB, ctx context.Context, getConfig ...string) 
     adminId := GetAdminId(ctx)
     result := Gorm.Model(&model.AdminRoleGroup{}).
         Where("admin_id = ? AND is_delete= ?", adminId, 0).Find(&all)
+
     if result.Error != nil {
         return nil, errors.New("用户组不存在")
     }

@@ -70,7 +70,12 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
     if resultAdmin.Error != nil {
         return 500000,nil, errors.New("登录校验异常")
     }
-   
+    // descodePwd,err:=base64.StdEncoding.DecodeString(req.Password)
+    // if err!=nil{
+    //     return 400000,nil, errors.New("密码错误")
+    // }
+    // logx.Error(string(descodePwd))
+    // logx.Error(adminInfo.Password)
     if dataFormat.ValidatePasswords(adminInfo.Password, req.Password) == false {
         return 400000,nil, errors.New("用户名或密码错误")
     }
