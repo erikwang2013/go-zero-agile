@@ -10,6 +10,7 @@ import (
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -74,6 +75,7 @@ func adminHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc 
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Index(&req)
         if err != nil {
+            logx.Error(err)
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
         } else {
             httpx.OkJson(w, successx.NewDefaultSuccess(code, resp))

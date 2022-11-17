@@ -7,6 +7,7 @@ import (
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"net/http"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -20,20 +21,22 @@ func NewAdminMiddleware(gorm *gorm.Gormdb, c config.Config) *AdminMiddleware {
 }
 
 func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
+
     return func(w http.ResponseWriter, r *http.Request) {
         getToken := r.Header.Get("Authorization")
+        logx.Error("==Middleware==", getToken)
         if len(getToken) <= 0 {
             httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
             return
         }
-        r.Header.Set("Access-Control-Allow-Origin", "*")
-        r.Header.Set("Access-Control-Allow-Credentials","true")
-        r.Header.Set("Access-Control-Allow-Headers","Content-Type,Cache-Control,User-Agent,Keep-Alive,Authorization,authorization")
         result := commonData.CheckPermission(m.db.Gorm, r.Context(), m.config, r.RequestURI, r.Method)
         if false == result {
             httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
             return
         }
+        r.Header.Add("Access-Control-Allow-Origin", "*")
+        r.Header.Add("Access-Control-Allow-Credentials", "true")
+        r.Header.Add("Access-Control-Allow-Headers", "Content-Type,Cache-Control,User-Agent,Keep-Alive,Authorization,authorization")
         next(w, r)
     }
 }

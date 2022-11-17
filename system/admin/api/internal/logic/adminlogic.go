@@ -325,6 +325,7 @@ func AdminCheckParam(req *types.AdminSearchReq) error {
 }
 
 func (l *AdminLogic) Index(req *types.AdminSearchReq) (code int, resp []*types.AdminInfoReply, err error) {
+logx.Error("===管理列表=1==")
     err = AdminCheckParam(req)
     if err != nil {
         return 400000, nil, err

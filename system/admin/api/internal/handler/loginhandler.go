@@ -20,7 +20,6 @@ func loginHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc 
             httpx.Error(w, err)
             return
         }
-
         l := logic.NewLoginLogic(r.Context(), svcCtx, db)
         code, resp, err := l.Login(&req)
         if err != nil {

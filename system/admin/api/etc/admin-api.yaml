@@ -14,12 +14,12 @@ Auth:
   AccessExpire: 604800
 
 LogConf:
-  Path: ./tmp/admin
   ServiceName: admin-log
+  Mode: console
+  Path: logs
   Level: error
-  Encoding: plain
-  TimeFormat: Y-m-d H:i:s
   KeepDays: 15
+  TimeFormat: 2006-01-02 15:04:05
 
 #设定固定的超级角色，角色属于这个的默认拥有所有权限
 Permission:
