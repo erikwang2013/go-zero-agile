@@ -1,14 +1,9 @@
 package middleware
 
 import (
-	"erik-agile/common/errorx"
-	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"net/http"
-
-	"github.com/zeromicro/go-zero/core/logx"
-	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
 type AdminMiddleware struct {
@@ -20,23 +15,9 @@ func NewAdminMiddleware(gorm *gorm.Gormdb, c config.Config) *AdminMiddleware {
     return &AdminMiddleware{db: gorm, config: c}
 }
 
-func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
 
+func (m *AdminMiddleware) Handle(next http.HandlerFunc) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
-        getToken := r.Header.Get("Authorization")
-        logx.Error("==Middleware==", getToken)
-        if len(getToken) <= 0 {
-            httpx.Error(w, errorx.NewCodeError(401000, "令牌认证失败"))
-            return
-        }
-        result := commonData.CheckPermission(m.db.Gorm, r.Context(), m.config, r.RequestURI, r.Method)
-        if false == result {
-            httpx.Error(w, errorx.NewCodeError(403000, "非法授权"))
-            return
-        }
-        r.Header.Add("Access-Control-Allow-Origin", "*")
-        r.Header.Add("Access-Control-Allow-Credentials", "true")
-        r.Header.Add("Access-Control-Allow-Headers", "Content-Type,Cache-Control,User-Agent,Keep-Alive,Authorization,authorization")
         next(w, r)
     }
 }
