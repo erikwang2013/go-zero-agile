@@ -2,11 +2,11 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
+	"erik-agile/common/errorx"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
@@ -39,7 +39,7 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
     var findData *model.Permission
@@ -47,14 +47,14 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
         Where(&model.Permission{Code: CheckCode, IsDelete: 0}).
         First(&findData)
     if resultFindCode.RowsAffected > 0 {
-        return 400000, nil, errors.New("权限编码已存在")
+        return 400000, nil, errorx.NewDefaultError("权限编码已存在")
     }
 
     resultFindUrl := l.db.Gorm.
         Where(&model.Permission{ApiUrl: req.ApiUrl, Method: req.Method}).
         First(&findData)
     if resultFindUrl.RowsAffected > 0 {
-        return 400000, nil, errors.New("url和请求类型已存在")
+        return 400000, nil, errorx.NewDefaultError("url和请求类型已存在")
     }
 
     setData := &model.Permission{
@@ -72,7 +72,7 @@ func (l *PermissionLogic) Create(req *types.PermissionAddReq) (code int, resp *t
     }
     result := l.db.Gorm.Create(&setData)
     if result.Error != nil {
-        return 500000, nil, errors.New("新增权限失败")
+        return 500000, nil, errorx.NewDefaultError("新增权限失败")
     }
     return 200000, &types.PermissionAddReply{
         Id:       setData.Id,
@@ -99,7 +99,7 @@ func (l *PermissionLogic) Delete(req *types.DeleteIdsReq) (code int, resp *strin
     validateRegister(validate)
     var ids []string
     if len(req.Id) <= 0 {
-        return 400000, nil, errors.New("删除id必须")
+        return 400000, nil, errorx.NewDefaultError("删除id必须")
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
@@ -107,12 +107,12 @@ func (l *PermissionLogic) Delete(req *types.DeleteIdsReq) (code int, resp *strin
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
-            return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+            return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
         }
     }
     result := l.db.Gorm.Model(&model.Permission{}).Where("id IN ?", ids).Updates(model.Permission{IsDelete: 1})
     if result.Error != nil {
-        return 500000, nil, errors.New("删除权限失败")
+        return 500000, nil, errorx.NewDefaultError("删除权限失败")
     }
     return 200000, &req.Id, nil
 }
@@ -124,7 +124,7 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     var up model.Permission
     i := 0
@@ -153,7 +153,7 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
         i += 1
     }
     if i <= 0 {
-        return 400000, nil, errors.New("至少更新一个参数")
+        return 400000, nil, errorx.NewDefaultError("至少更新一个参数")
     }
     CheckCode := dataFormat.GetMd5(req.ApiUrl + req.Method)
     up.Code = CheckCode
@@ -162,18 +162,18 @@ func (l *PermissionLogic) Put(req *types.PermissionPutReq) (code int, resp *stri
         Where("id <> ? and code=? and is_delete=?", req.Id, CheckCode, 0).
         First(&findData)
     if resultFindCode.RowsAffected > 0 {
-        return 400000, nil, errors.New("权限编码已存在")
+        return 400000, nil, errorx.NewDefaultError("权限编码已存在")
     }
 
     resultFindUrl := l.db.Gorm.Model(&model.Permission{}).
         Where("id <> ? and api_url=? and method=? and is_delete=?", req.Id, req.ApiUrl, req.Method, 0).
         First(&findData)
     if resultFindUrl.RowsAffected > 0 {
-        return 400000, nil, errors.New("url和请求类型已存在")
+        return 400000, nil, errorx.NewDefaultError("url和请求类型已存在")
     }
     result := l.db.Gorm.Model(&model.Permission{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
-        return 500000, nil, errors.New("更新权限失败")
+        return 500000, nil, errorx.NewDefaultError("更新权限失败")
     }
     upId := dataFormat.IntToString(req.Id)
     return 200000, &upId, nil
@@ -206,7 +206,7 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     var getData model.Permission
     getData.IsDelete = int8(0)
@@ -244,11 +244,11 @@ func (l *PermissionLogic) Index(req *types.PermissionSearchReq) (code int, resp 
     pageSetNum, offset := dataFormat.Page(req.Limit, req.Page, total)
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
-        return 500000, nil, errors.New("查询权限列表失败")
+        return 500000, nil, errorx.NewDefaultError("查询权限列表失败")
     }
     getAll := []*types.PermissionAddReply{}
     if len(all) <= 0 {
-        return 404000, getAll, errors.New("用户权限异常或无权限")
+        return 404000, getAll, errorx.NewDefaultError("用户权限异常或无权限")
     }
     for _, v := range all {
         r := &types.PermissionAddReply{

@@ -2,12 +2,12 @@ package logic
 
 import (
 	"context"
-	"errors"
 	"reflect"
 	"strings"
 	"time"
 
 	dataFormat "erik-agile/common/data-format"
+	"erik-agile/common/errorx"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
@@ -63,12 +63,12 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000,nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000,nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     var adminInfo *model.Admin
     resultAdmin := l.db.Gorm.Where(&model.Admin{Name: req.UserName,IsDelete: 0}).First(&adminInfo)
     if resultAdmin.Error != nil {
-        return 500000,nil, errors.New("登录校验异常")
+        return 500000,nil, errorx.NewDefaultError("登录校验异常")
     }
     // descodePwd,err:=base64.StdEncoding.DecodeString(req.Password)
     // if err!=nil{
@@ -77,11 +77,11 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
     // logx.Error(string(descodePwd))
     // logx.Error(adminInfo.Password)
     if dataFormat.ValidatePasswords(adminInfo.Password, req.Password) == false {
-        return 400000,nil, errors.New("用户名或密码错误")
+        return 400000,nil, errorx.NewDefaultError("用户名或密码错误")
     }
     token, now, accessExpire, err := l.getJwtToken(adminInfo.Id)
     if err != nil {
-        return 500000,nil, errors.New("令牌生成失败")
+        return 500000,nil, errorx.NewDefaultError("令牌生成失败")
     }
     getTime := time.Unix(time.Now().Unix(), 0)
     adminLog := &model.AdminLoginLog{
@@ -93,7 +93,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (code int,reqly *types.LoginRepl
     }
     resultLog := l.db.Gorm.Create(adminLog)
     if resultLog.Error != nil {
-        return 500000,nil, errors.New("登录记录失败")
+        return 500000,nil, errorx.NewDefaultError("登录记录失败")
     }
     return 200000,&types.LoginReply{
         Id:           adminInfo.Id,

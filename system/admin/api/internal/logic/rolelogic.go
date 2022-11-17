@@ -4,12 +4,12 @@ import (
 	"context"
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
+	"erik-agile/common/errorx"
 	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"erik-agile/system/admin/model"
-	"errors"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -40,13 +40,13 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     CheckCode := dataFormat.GetMd5(stringx.Rand())
     var findData *model.Role
     resultFindCode := l.db.Gorm.Where(&model.Role{Code: CheckCode}).First(&findData)
     if resultFindCode.RowsAffected > 0 {
-        return 400000, nil, errors.New("角色编码已存在")
+        return 400000, nil, errorx.NewDefaultError("角色编码已存在")
     }
 
     setData := &model.Role{
@@ -64,13 +64,13 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     result := tx.Create(&setData)
     if result.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("新增角色失败")
+        return 500000, nil, errorx.NewDefaultError("新增角色失败")
     }
     permissionIds := strings.Split(req.Permission, ",")
     rolePermission := []model.RolePermission{}
     if len(permissionIds) <= 0 {
         tx.Rollback()
-        return 500000, nil, errors.New("新增角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("新增角色权限失败")
     }
     for _, pr := range permissionIds {
         rolePermission = append(rolePermission, model.RolePermission{
@@ -85,7 +85,7 @@ func (l *RoleLogic) Create(req *types.RoleAddReq) (code int, resp *types.RoleAdd
     resultPr := tx.Create(&rolePermission)
     if resultPr.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("新增角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("新增角色权限失败")
     }
     tx.Commit()
     return 200000, &types.RoleAddReply{
@@ -111,7 +111,7 @@ func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err
     validateRegister(validate)
     var ids []string
     if len(req.Id) <= 0 {
-        return 400000, nil, errors.New("删除id必须")
+        return 400000, nil, errorx.NewDefaultError("删除id必须")
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
@@ -119,19 +119,19 @@ func (l *RoleLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, err
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
-            return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+            return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
         }
     }
     tx := l.db.Gorm.Begin()
     result := tx.Model(&model.Role{}).Where("id IN ?", ids).Updates(model.Role{IsDelete: 1})
     if result.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("删除角色失败")
+        return 500000, nil, errorx.NewDefaultError("删除角色失败")
     }
     resultPr := tx.Model(&model.RolePermission{}).Where("role_id IN ?", ids).Updates(model.RolePermission{IsDelete: 1})
     if resultPr.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("删除角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("删除角色权限失败")
     }
     tx.Commit()
     return 200000, &req.Id, nil
@@ -144,7 +144,7 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     var up model.Role
     i := 0
@@ -165,7 +165,7 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
         i += 1
     }
     if i <= 0 {
-        return 400000, nil, errors.New("至少更新一个参数")
+        return 400000, nil, errorx.NewDefaultError("至少更新一个参数")
     }
     CheckCode := dataFormat.GetMd5(stringx.Rand())
     up.Code = CheckCode
@@ -175,24 +175,24 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
         First(&findData)
         
     if resultFindCode.RowsAffected >0 {
-        return 400000, nil, errors.New("角色编码已存在")
+        return 400000, nil, errorx.NewDefaultError("角色编码已存在")
     }
     tx := l.db.Gorm.Begin()
     result := tx.Model(&model.Role{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("更新角色失败")
+        return 500000, nil, errorx.NewDefaultError("更新角色失败")
     }
     resultPr := tx.Model(&model.RolePermission{}).Where("role_id = ?", req.Id).Updates(model.RolePermission{IsDelete: 1})
     if resultPr.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("删除角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("删除角色权限失败")
     }
     permissionIds := strings.Split(req.Permission, ",")
     rolePermission := []model.RolePermission{}
     if len(permissionIds) <= 0 {
         tx.Rollback()
-        return 500000, nil, errors.New("新增角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("新增角色权限失败")
     }
     for _, pr := range permissionIds {
         rolePermission = append(rolePermission, model.RolePermission{
@@ -207,7 +207,7 @@ func (l *RoleLogic) Put(req *types.RolePutReq) (code int, resp *string, err erro
     resultPrC := tx.Create(&rolePermission)
     if resultPrC.Error != nil {
         tx.Rollback()
-        return 500000, nil, errors.New("新增角色权限失败")
+        return 500000, nil, errorx.NewDefaultError("新增角色权限失败")
     }
     tx.Commit()
     upId := dataFormat.IntToString(req.Id)
@@ -235,7 +235,7 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
     }
     var getData model.Role
     getData.IsDelete = int8(0)
@@ -265,15 +265,15 @@ func (l *RoleLogic) Index(req *types.RoleSearchReq) (code int, resp []*types.Rol
     }
     result := db.Find(&all)
     if result.Error != nil {
-        return 500000, nil, errors.New("查询角色列表失败")
+        return 500000, nil, errorx.NewDefaultError("查询角色列表失败")
     }
     getAll := []*types.RoleAddPermissionReply{}
     if len(all) <= 0 {
-        return 404000, getAll, errors.New("角色不存在或异常")
+        return 404000, getAll, errorx.NewDefaultError("角色不存在或异常")
     }
     getAll, err = commonData.GetRole(l.db.Gorm, all)
     if err != nil {
-        return 500000, nil, errors.New("角色不存在或异常")
+        return 500000, nil, errorx.NewDefaultError("角色不存在或异常")
     }
     // for _, v := range permission {
     //     r := &types.RoleAddReply{
