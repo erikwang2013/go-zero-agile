@@ -9,6 +9,7 @@ import (
 	"erik-agile/system/admin/api/internal/types"
 	"net/http"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -16,7 +17,8 @@ func roleCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleAddReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewRoleLogic(r.Context(), svcCtx, db)
@@ -33,7 +35,8 @@ func roleDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewRoleLogic(r.Context(), svcCtx, db)
@@ -50,7 +53,8 @@ func rolePutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFun
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RolePutReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewRoleLogic(r.Context(), svcCtx, db)
@@ -67,7 +71,8 @@ func roleHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleSearchReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewRoleLogic(r.Context(), svcCtx, db)

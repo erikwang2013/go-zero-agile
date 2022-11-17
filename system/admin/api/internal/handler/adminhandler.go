@@ -18,7 +18,8 @@ func adminCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handle
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminAddReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)
@@ -35,7 +36,8 @@ func adminDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handle
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)
@@ -52,7 +54,8 @@ func adminPutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFu
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminPutReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)
@@ -69,7 +72,8 @@ func adminHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc 
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.AdminSearchReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewAdminLogic(r.Context(), svcCtx, db)

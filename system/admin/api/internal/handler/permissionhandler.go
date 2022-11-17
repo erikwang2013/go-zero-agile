@@ -10,6 +10,7 @@ import (
 	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 
+	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
@@ -17,7 +18,8 @@ func permissionCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.H
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionAddReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
@@ -34,7 +36,8 @@ func permissionDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.H
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
@@ -51,7 +54,8 @@ func permissionPutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Hand
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionPutReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+           logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewPermissionLogic(r.Context(), svcCtx, db)
@@ -68,7 +72,8 @@ func permissionHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.PermissionSearchReq
         if err := httpx.Parse(r, &req); err != nil {
-            httpx.Error(w, err)
+            logx.Error(err)
+            httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
         l := logic.NewPermissionLogic(r.Context(), svcCtx, db)

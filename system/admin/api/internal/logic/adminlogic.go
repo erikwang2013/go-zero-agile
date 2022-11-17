@@ -2,11 +2,11 @@ package logic
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	dataFormat "erik-agile/common/data-format"
 	"erik-agile/common/date"
-	"erik-agile/common/errorx"
 	commonData "erik-agile/system/admin/api/internal/common-data"
 	"erik-agile/system/admin/api/internal/svc"
 	"erik-agile/system/admin/api/internal/svc/gorm"
@@ -21,7 +21,7 @@ type AdminLogic struct {
     logx.Logger
     ctx    context.Context
     svcCtx *svc.ServiceContext
-    db     *gorm.Gormdb
+    db    *gorm.Gormdb
 }
 
 func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *AdminLogic {
@@ -29,7 +29,7 @@ func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.G
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
-        db:     gorm,
+        db:    gorm,
     }
 }
 
@@ -40,27 +40,27 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     checkPhone := dataFormat.CheckMobile(req.Phone)
     if len(req.Phone) > 0 && false == checkPhone {
-        return 400000, nil, errorx.NewDefaultError("手机号格式错误")
+        return 400000, nil, errors.New("手机号格式错误")
     }
     var adminInfo *model.Admin
     resultAdmin := l.db.Gorm.Model(&model.Admin{}).
         Where("name =? and is_delete=?", req.Name, 0).First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("用户名已存在")
+        return 400000, nil, errors.New("用户名已存在")
     }
     resultFindPhone := l.db.Gorm.Model(&model.Admin{}).
         Where("phone=? and is_delete=?", req.Phone, 0).First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("手机号已存在")
+        return 400000, nil, errors.New("手机号已存在")
     }
     resultFindEmail := l.db.Gorm.Model(&model.Admin{}).
         Where("email=? and is_delete=?", req.Email, 0).First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("邮箱已存在")
+        return 400000, nil, errors.New("邮箱已存在")
     }
 
     getTime := date.GetDefaultTimeFormat()
@@ -87,14 +87,14 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
     }
     byct, err := dataFormat.HashAndSalt(password)
     if err != nil {
-        return 500000, nil, errorx.NewDefaultError("密码生成失败")
+        return 500000, nil, errors.New("密码生成失败")
     }
     setData.Password = byct
     tx := l.db.Gorm.Begin()
     resultAdd := tx.Create(&setData)
     if resultAdd.Error != nil {
         tx.Rollback()
-        return 500000, nil, errorx.NewDefaultError("新增用户失败")
+        return 500000, nil, errors.New("新增用户失败")
     }
     var roleGroupInfo *model.AdminRoleGroup
     resultFindRole := l.db.Gorm.Model(&model.AdminRoleGroup{}).
@@ -102,7 +102,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
         First(&roleGroupInfo)
     if resultFindRole.RowsAffected > 0 {
         tx.Rollback()
-        return 400000, nil, errorx.NewDefaultError("角色已存分配")
+        return 400000, nil, errors.New("角色已存分配")
     }
     roleGroup := &model.AdminRoleGroup{
         RoleId:   req.RoleId,
@@ -113,7 +113,7 @@ func (l *AdminLogic) Create(req *types.AdminAddReq) (code int, resp *types.Admin
     resultRoleGroup := tx.Create(&roleGroup)
     if resultRoleGroup.Error != nil {
         tx.Rollback()
-        return 500000, nil, errorx.NewDefaultError("分配用户角色失败")
+        return 500000, nil, errors.New("分配用户角色失败")
     }
     tx.Commit()
     getRole, err := commonData.GetRolePermission(l.db.Gorm, l.ctx)
@@ -153,7 +153,7 @@ func (l *AdminLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, er
     validateRegister(validate)
     var ids []string
     if len(req.Id) <= 0 {
-        return 400000, nil, errorx.NewDefaultError("删除id必须")
+        return 400000, nil, errors.New("删除id必须")
     }
     ids = strings.Split(req.Id, ",")
     for _, v := range ids {
@@ -161,12 +161,12 @@ func (l *AdminLogic) Delete(req *types.DeleteIdsReq) (code int, resp *string, er
         if err != nil {
             varError := err.(validator.ValidationErrors)
             transStr := varError.Translate(trans)
-            return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
+            return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
         }
     }
     result := l.db.Gorm.Model(&model.Admin{}).Where("id IN ?", ids).Updates(model.Admin{IsDelete: 1})
     if result.Error != nil {
-        return 500000, nil, errorx.NewDefaultError("删除用户失败")
+        return 500000, nil, errors.New("删除用户失败")
     }
     return 200000, &req.Id, nil
 }
@@ -178,7 +178,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return 400000, nil, errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
+        return 400000, nil, errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     var up model.Admin
     i := 0
@@ -200,7 +200,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     if len(req.Password) > 0 {
         byct, err := dataFormat.HashAndSalt(req.Password)
         if err != nil {
-            return 500000, nil, errorx.NewDefaultError("密码加密失败")
+            return 500000, nil, errors.New("密码加密失败")
         }
         up.Password = byct
         i += 1
@@ -208,7 +208,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     if len(req.Phone) > 0 {
         checkPhone := dataFormat.CheckMobile(req.Phone)
         if false == checkPhone {
-            return 400000, nil, errorx.NewDefaultError("手机号格式错误")
+            return 400000, nil, errors.New("手机号格式错误")
         }
         up.Phone = req.Phone
         i += 1
@@ -230,32 +230,32 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
         i += 1
     }
     if i <= 0 {
-        return 400000, nil, errorx.NewDefaultError("至少更新一个参数")
+        return 400000, nil, errors.New("至少更新一个参数")
     }
     var adminInfo *model.Admin
     resultAdmin := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and name=? and is_delete=?", req.Id, req.Name, 0).
         First(&adminInfo)
     if resultAdmin.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("用户名已存在")
+        return 400000, nil, errors.New("用户名已存在")
     }
     resultFindPhone := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and phone=? and is_delete=?", req.Id, req.Phone, 0).
         First(&adminInfo)
     if resultFindPhone.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("手机号已存在")
+        return 400000, nil, errors.New("手机号已存在")
     }
     resultFindEmail := l.db.Gorm.Model(&model.Admin{}).
         Where("id <> ? and email=? and is_delete=?", req.Id, req.Email, 0).
         First(&adminInfo)
     if resultFindEmail.RowsAffected > 0 {
-        return 400000, nil, errorx.NewDefaultError("邮箱已存在")
+        return 400000, nil, errors.New("邮箱已存在")
     }
     tx := l.db.Gorm.Begin()
     result := tx.Model(&model.Admin{}).Where("id = ?", req.Id).Updates(up)
     if result.Error != nil {
         tx.Rollback()
-        return 500000, nil, errorx.NewDefaultError("更新用户失败")
+        return 500000, nil, errors.New("更新用户失败")
     }
     var roleGroupInfo *model.AdminRoleGroup
     resultFindRole := l.db.Gorm.Model(&model.AdminRoleGroup{}).
@@ -263,7 +263,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
         First(&roleGroupInfo)
     if resultFindRole.RowsAffected > 0 {
         tx.Rollback()
-        return 400000, nil, errorx.NewDefaultError("角色已存分配")
+        return 400000, nil, errors.New("角色已存分配")
     }
     roleGroup := &model.AdminRoleGroup{
         RoleId:   req.RoleId,
@@ -274,7 +274,7 @@ func (l *AdminLogic) Put(req *types.AdminPutReq) (code int, resp *string, err er
     resultRoleGroup := tx.Create(&roleGroup)
     if resultRoleGroup.Error != nil {
         tx.Rollback()
-        return 500000, nil, errorx.NewDefaultError("分配用户角色失败")
+        return 500000, nil, errors.New("分配用户角色失败")
     }
     tx.Commit()
     upId := dataFormat.IntToString(req.Id)
@@ -299,7 +299,7 @@ func AdminCheckParam(req *types.AdminSearchReq) error {
     }
     checkPhone := dataFormat.CheckMobile(req.Phone)
     if len(req.Phone) > 0 && false == checkPhone {
-        return errorx.NewDefaultError("手机号格式错误")
+        return errors.New("手机号格式错误")
     }
     if len(req.Email) > 0 {
         err = validate.Var(req.Email, "email")
@@ -319,7 +319,7 @@ func AdminCheckParam(req *types.AdminSearchReq) error {
     if err != nil {
         varError := err.(validator.ValidationErrors)
         transStr := varError.Translate(trans)
-        return errorx.NewDefaultError(dataFormat.RemoveTopStruct(transStr))
+        return errors.New(dataFormat.RemoveTopStruct(transStr))
     }
     return nil
 }
@@ -379,7 +379,7 @@ logx.Error("===管理列表=1==")
     result := db.Limit(pageSetNum).Offset(offset).Find(&all)
     if result.Error != nil {
         logx.Error(result.Error)
-        return 500000, nil, errorx.NewDefaultError("查询用户列表失败")
+        return 500000, nil, errors.New("查询用户列表失败")
     }
     getAll := []*types.AdminInfoReply{}
     if len(all) <= 0 {
@@ -421,14 +421,14 @@ func (l *AdminLogic) AdminInfo() (code int, resp *types.AdminGetInfoReply, err e
     resultAdmin := l.db.Gorm.Where(&model.Admin{Id: adminId}).
         First(&adminInfo)
     if resultAdmin.Error != nil {
-        return 400000, nil, errorx.NewDefaultError("用户异常，请稍后再试")
+        return 400000, nil, errors.New("用户异常，请稍后再试")
     }
     getRole, err := commonData.GetRolePermission(l.db.Gorm, l.ctx)
     if err != nil {
         getRole = []*types.RoleAddPermissionReply{}
     }
     if adminInfo.Id <= 0 {
-        return 404000, &types.AdminGetInfoReply{}, errorx.NewDefaultError("用户不存在")
+        return 404000, &types.AdminGetInfoReply{}, errors.New("用户不存在")
     }
     return 200000, &types.AdminGetInfoReply{
         Id:       adminInfo.Id,
