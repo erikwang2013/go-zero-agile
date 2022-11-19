@@ -24,12 +24,12 @@ type RoleLogic struct {
     db     *gorm.Gormdb
 }
 
-func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *RoleLogic {
+func NewRoleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *RoleLogic {
     return &RoleLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
-        db:     gorm,
+        db:     gorm.NewGormdb(svcCtx.Config),
     }
 }
 

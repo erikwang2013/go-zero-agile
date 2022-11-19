@@ -5,17 +5,16 @@ import (
     "net/http"
 
     "erik-agile/system/admin/api/internal/svc"
-    "erik-agile/system/admin/api/internal/svc/gorm"
     "github.com/zeromicro/go-zero/rest"
 )
 
-func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext, db *gorm.Gormdb) {
+func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
     server.AddRoutes(
         []rest.Route{
             {
                 Method:  http.MethodPost,
                 Path:    "/system/admin/login",
-                Handler: loginHandler(serverCtx, db),
+                Handler: loginHandler(serverCtx),
             },
         },
     )
@@ -27,67 +26,67 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext, db *go
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/admin",
-                    Handler: adminCreateHandler(serverCtx, db),
+                    Handler: adminCreateHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/admin",
-                    Handler: adminDeleteHandler(serverCtx, db),
+                    Handler: adminDeleteHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/admin",
-                    Handler: adminPutHandler(serverCtx, db),
+                    Handler: adminPutHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/admin",
-                    Handler: adminHandler(serverCtx, db),
+                    Handler: adminHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/admin/info",
-                    Handler: adminInfoHandler(serverCtx, db),
+                    Handler: adminInfoHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/permission",
-                    Handler: permissionCreateHandler(serverCtx, db),
+                    Handler: permissionCreateHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/permission",
-                    Handler: permissionDeleteHandler(serverCtx, db),
+                    Handler: permissionDeleteHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/permission",
-                    Handler: permissionPutHandler(serverCtx, db),
+                    Handler: permissionPutHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/permission",
-                    Handler: permissionHandler(serverCtx, db),
+                    Handler: permissionHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPost,
                     Path:    "/system/role",
-                    Handler: roleCreateHandler(serverCtx, db),
+                    Handler: roleCreateHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodDelete,
                     Path:    "/system/role",
-                    Handler: roleDeleteHandler(serverCtx, db),
+                    Handler: roleDeleteHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodPut,
                     Path:    "/system/role",
-                    Handler: rolePutHandler(serverCtx, db),
+                    Handler: rolePutHandler(serverCtx),
                 },
                 {
                     Method:  http.MethodGet,
                     Path:    "/system/role",
-                    Handler: roleHandler(serverCtx, db),
+                    Handler: roleHandler(serverCtx),
                 },
             }...,
         ),

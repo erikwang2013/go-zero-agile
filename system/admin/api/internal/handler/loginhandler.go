@@ -7,14 +7,13 @@ import (
 	"erik-agile/common/successx"
 	"erik-agile/system/admin/api/internal/logic"
 	"erik-agile/system/admin/api/internal/svc"
-	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func loginHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
+func loginHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.LoginReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -22,7 +21,7 @@ func loginHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc 
             httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
-        l := logic.NewLoginLogic(r.Context(), svcCtx, db)
+        l := logic.NewLoginLogic(r.Context(), svcCtx)
         code, resp, err := l.Login(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))

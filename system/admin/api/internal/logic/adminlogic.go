@@ -24,12 +24,12 @@ type AdminLogic struct {
     db    *gorm.Gormdb
 }
 
-func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *AdminLogic {
+func NewAdminLogic(ctx context.Context, svcCtx *svc.ServiceContext) *AdminLogic {
     return &AdminLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
-        db:    gorm,
+        db:    gorm.NewGormdb(svcCtx.Config),
     }
 }
 

@@ -5,7 +5,6 @@ import (
 	"erik-agile/common/successx"
 	"erik-agile/system/admin/api/internal/logic"
 	"erik-agile/system/admin/api/internal/svc"
-	"erik-agile/system/admin/api/internal/svc/gorm"
 	"erik-agile/system/admin/api/internal/types"
 	"net/http"
 
@@ -13,7 +12,7 @@ import (
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 
-func roleCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
+func roleCreateHandler(svcCtx *svc.ServiceContext ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleAddReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -21,7 +20,7 @@ func roleCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
             httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
+        l := logic.NewRoleLogic(r.Context(), svcCtx)
         code, resp, err := l.Create(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -31,7 +30,7 @@ func roleCreateHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
     }
 }
 
-func roleDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
+func roleDeleteHandler(svcCtx *svc.ServiceContext ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.DeleteIdsReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -39,7 +38,7 @@ func roleDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
             httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
+        l := logic.NewRoleLogic(r.Context(), svcCtx)
         code, resp, err := l.Delete(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -49,7 +48,7 @@ func roleDeleteHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.Handler
     }
 }
 
-func rolePutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
+func rolePutHandler(svcCtx *svc.ServiceContext ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RolePutReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -57,7 +56,7 @@ func rolePutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFun
             httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
+        l := logic.NewRoleLogic(r.Context(), svcCtx)
         code, resp, err := l.Put(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))
@@ -67,7 +66,7 @@ func rolePutHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFun
     }
 }
 
-func roleHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
+func roleHandler(svcCtx *svc.ServiceContext ) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
         var req types.RoleSearchReq
         if err := httpx.Parse(r, &req); err != nil {
@@ -75,7 +74,7 @@ func roleHandler(svcCtx *svc.ServiceContext, db *gorm.Gormdb) http.HandlerFunc {
             httpx.Error(w, errorx.NewCodeError(401000, "请求参数错误"))
             return
         }
-        l := logic.NewRoleLogic(r.Context(), svcCtx, db)
+        l := logic.NewRoleLogic(r.Context(), svcCtx)
         code, resp, err := l.Index(&req)
         if err != nil {
             httpx.Error(w, errorx.NewCodeError(code, err.Error()))

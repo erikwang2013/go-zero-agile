@@ -23,12 +23,12 @@ type PermissionLogic struct {
     db     *gorm.Gormdb
 }
 
-func NewPermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *PermissionLogic {
+func NewPermissionLogic(ctx context.Context, svcCtx *svc.ServiceContext) *PermissionLogic {
     return &PermissionLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
-        db:     gorm,
+        db:     gorm.NewGormdb(svcCtx.Config),
     }
 }
 

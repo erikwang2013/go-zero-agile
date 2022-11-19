@@ -28,12 +28,12 @@ type LoginLogic struct {
     db     *gorm.Gormdb
 }
 
-func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext, gorm *gorm.Gormdb) *LoginLogic {
+func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic {
     return &LoginLogic{
         Logger: logx.WithContext(ctx),
         ctx:    ctx,
         svcCtx: svcCtx,
-        db:     gorm,
+        db:    gorm.NewGormdb(svcCtx.Config),
     }
 }
 

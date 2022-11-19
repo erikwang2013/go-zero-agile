@@ -9,7 +9,6 @@ import (
 	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/handler"
 	"erik-agile/system/admin/api/internal/svc"
-	"erik-agile/system/admin/api/internal/svc/gorm"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/logx"
@@ -27,9 +26,8 @@ func main() {
     logx.MustSetup(c.LogConf)
     server := rest.MustNewServer(c.RestConf)
     defer server.Stop()
-    db := gorm.NewGormdb(c)
-    ctx := svc.NewServiceContext(c, db)
-    handler.RegisterHandlers(server, ctx, db)
+    ctx := svc.NewServiceContext(c)
+    handler.RegisterHandlers(server, ctx)
     //自定义错误
     httpx.SetErrorHandler(func(err error) (int, interface{}) {
         switch e := err.(type) {

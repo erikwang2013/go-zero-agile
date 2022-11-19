@@ -3,7 +3,6 @@ package svc
 import (
 	"erik-agile/system/admin/api/internal/config"
 	"erik-agile/system/admin/api/internal/middleware"
-	"erik-agile/system/admin/api/internal/svc/gorm"
 
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -29,9 +28,9 @@ type ServiceContext struct {
 //         Gorm:               xgorm.NewGorm(c.Mysql.DataSource),
 //     }
 // }
-func NewServiceContext(c config.Config, db *gorm.Gormdb) *ServiceContext {
+func NewServiceContext(c config.Config) *ServiceContext {
     return &ServiceContext{
         Config:      c,
-        AdminMiddle: middleware.NewAdminMiddleware(db, c).Handle,
+        AdminMiddle: middleware.NewAdminMiddleware(c).Handle,
     }
 }
